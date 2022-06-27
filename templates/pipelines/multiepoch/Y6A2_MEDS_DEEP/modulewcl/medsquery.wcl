@@ -1,0 +1,14 @@
+<module>
+    <medsquery>
+        modnamepat = ${modnamepat_tile_generic}
+        noop = True    # only run query so can use info in other modules
+        <list>
+            <medsfiles>
+                exec = query_coadd_for_meds.py
+                args = -A ${coadd_id} -v 2 --outfile ${qoutfile} --zeropoint None --bkgimg --segmap --psfmodel --usepiff --pifftag Y6A1_PIFF --bandlist ${bands}
+
+                columns = red.mag_zero
+            </medsfiles>
+        </list>
+    </medsquery>
+</module>

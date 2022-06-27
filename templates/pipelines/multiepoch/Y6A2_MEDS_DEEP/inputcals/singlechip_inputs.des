@@ -1,0 +1,64 @@
+camsym = D
+cfgver = Y3A2_v9
+meds_config_ver = Y3A2v5
+fiattable=Y3A1_IMAGE_TO_TILE
+
+color_r_band = i
+color_g_band = r
+color_b_band = g
+mag_zero = 30
+
+zsource = FGCM
+zversion = y4a1_v1.5
+zeropoint_table = zeropoint
+zflag = 16
+
+z2source = PGCM_FORCED
+z2version = Y3A2_MISC
+zpt2 = ZEROPOINT
+z2flag = 16
+
+blacklist_table = Y3A1_BLACKLIST
+
+assemble_xblock = 10
+assemble_yblock = 3
+assemble_maxcols = 100
+assemble_mincols = 1
+assemble_ydilate = 3
+
+psfex_satur_level_deep = 2200
+psfex_satur_level_shallow = 4500
+psfex_satur_level_u_shallow = 6000
+psfex_satur_level_g_shallow = 6000
+psfex_satur_level_r_shallow = 5900
+psfex_satur_level_i_shallow = 4500
+psfex_satur_level_z_shallow = 5800
+psfex_satur_level_Y_shallow = 5800
+psfex_satur_level_u_deep = 5200
+psfex_satur_level_g_deep = 5200
+psfex_satur_level_r_deep = 2200
+psfex_satur_level_i_deep = 2500
+psfex_satur_level_z_deep = 3500
+psfex_satur_level_Y_deep = 3500
+
+ra_col = ALPHAWIN_J2000
+dec_col = DELTAWIN_J2000
+cat_columns = NUMBER,${ra_col},${dec_col}
+
+scamp_config_file = ${cfgver}_scamp.config
+swarp_config_file = ${cfgver}_swarp.config
+nwgint_config_file = ${cfgver}_coadd_nwgint.config
+deepstreaks_config_file = Y3A2_v6_streaks_update-Y1234_FINALCUT_v2.fits
+psfex_config_file = ${cfgver}_psfex.config
+stiff_config_file = ${cfgver}_stiff.config
+ptif_config_file = ${cfgver}_ptif.config
+sex_psfex_config_file = ${cfgver}_sex.config
+sex_psfex_param_file = ${cfgver}_sex.param_psfex
+sex_psfex_conv_file = ${cfgver}_sex.conv
+sex_psfex_nnw_file = ${cfgver}_sex.nnw
+sex_cat_config_file = ${cfgver}_sex.config
+sex_cat_conv_file = ${cfgver}_gauss_3.0_7x7.conv
+# nomodel sex_cat_param_file is for testing purposes only....runs faster
+sex_cat_param_file = ${cfgver}_sex.param_diskonly
+#sex_cat_param_file = ${cfgver}_sex.param_nomodel
+sex_cat_nnw_file = ${cfgver}_sex.nnw

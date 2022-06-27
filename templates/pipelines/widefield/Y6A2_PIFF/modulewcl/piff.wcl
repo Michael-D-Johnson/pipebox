@@ -48,7 +48,7 @@
 
             <piff_config>
                 filetype = config
-                filename = ${piff_config}
+                filename = ${confignite}_piff_v4_${band}.yaml
                 dirpat = se
                 rundir = config
                 ops_enddir = config
@@ -99,6 +99,7 @@
                 _06 = input.wcs.ccdnum=${ccdnum}
                 _07 = output.dir="."
                 _08 = output.stats.file_name=${file.piff_model_stats.fullname}
+                _09 = select.seed=${expnum}
                 v = 2
             </cmdline>
         </exec_1>

@@ -1,0 +1,110 @@
+<module>
+    <metadetect>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        wrapperloop = tilename
+        #max_fwthreads = 1
+        <exec_1>
+            <cmdline>
+                _01_g_band = ${file.pizza_cutter_g.fullname}
+                _02_r_band = ${file.pizza_cutter_r.fullname}
+                _03_i_band = ${file.pizza_cutter_i.fullname}
+                _04_z_band = ${file.pizza_cutter_z.fullname}
+                band-names = griz
+                config = ${file.metadetect_config.fullname}
+                output-path = ${file.metadetect.fullname}
+                seed = 640572
+                n-jobs = 4
+            </cmdline>
+            execname = run-metadetect-on-slices
+            cmd_hyphen =  alldouble
+            used = file.metadetect_config, file.pizza_cutter_g,file.pizza_cutter_r,file.pizza_cutter_i,file.pizza_cutter_z
+            was_generated_by = file.metadetect,file.metadetect_healsparse
+            ancestry =file.metadetect_config:file.metadetect,file.metadetect_config:file.metadetect_healsparse,file.pizza_cutter_g:file.metadetect,file.pizza_cutter_r:file.metadetect,file.pizza_cutter_i:file.metadetect,file.pizza_cutter_z:file.metadetect
+        </exec_1>
+        <file>
+            <pizza_cutter_g>
+                dirpat = mepoch
+                band = g
+                pfw_attempt_id = ${coadd_id}
+                filetype = coadd_pizza_cutter
+                output_fields = filename,band
+                query_fields = filetype,pfw_attempt_id,band
+                query_table = miscfile
+                rundir = pizza-cutter
+                columns = pizza_cutter_g.fullname,coadd_pizza_cutter_g.band
+            </pizza_cutter_g>
+            <pizza_cutter_r>
+                dirpat = mepoch
+                band = r
+                pfw_attempt_id = ${coadd_id}
+                filetype = coadd_pizza_cutter
+                output_fields = filename,band
+                query_fields = filetype,pfw_attempt_id,band
+                query_table = miscfile
+                rundir = pizza-cutter
+                columns = pizza_cutter_r.fullname,pizza_cutter_r.band
+            </pizza_cutter_r>
+            <pizza_cutter_i>
+                dirpat = mepoch
+                band = i
+                pfw_attempt_id = ${coadd_id}
+                filetype = coadd_pizza_cutter
+                output_fields = filename,band
+                query_fields = filetype,pfw_attempt_id,band
+                query_table = miscfile
+                rundir = pizza-cutter
+                columns = pizza_cutter_i.fullname,pizza_cutter_i.band
+            </pizza_cutter_i>
+            <pizza_cutter_z>
+                dirpat = mepoch
+                band = z
+                pfw_attempt_id = ${coadd_id}
+                filetype = coadd_pizza_cutter
+                output_fields = filename,band
+                query_fields = filetype,pfw_attempt_id,band
+                query_table = miscfile
+                rundir = pizza-cutter
+                columns = pizza_cutter_z.fullname,pizza_cutter_z.band
+            </pizza_cutter_z>
+            <metadetect_config>
+                filetype = config
+                filename = ${cfgver}_metadetect-Y6A1v4.yaml
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = config
+            </metadetect_config>
+            <metadetect>
+                filetype = coadd_metadetect
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = metadetect
+                fsuffix = fits.fz
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = metadetect
+                rundir = metadetect
+                savefiles = true
+                compress_files = false
+            </metadetect>
+	    <metadetect_healsparse>
+	        filetype = coadd_metadetect_healsparse
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = metadetect-healsparse-mask
+                fsuffix = hs
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = metadetect
+                rundir = metadetect
+                savefiles = true
+                compress_files = false
+	    </metadetect_healsparse>
+        </file>
+    </metadetect>
+</module>

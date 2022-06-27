@@ -6,8 +6,8 @@
         <exec_1>
             <cmdline>
                 tilename = ${tilename}
-                me_proctag = Y6A2_COADD
-                piff_tag = Y6A1_PIFF
+                me_proctag = ${me_proctag}
+                piff_tag = ${piff_tag}
                 o = ${file.piffqa.fullname}
                 s = db-desoper
                 S = prod
