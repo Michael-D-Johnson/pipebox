@@ -1,0 +1,79 @@
+<module>
+    <collate-sof>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        wrapperloop = tilename
+        loopobj = list.inlist 
+        max_fwthreads = ${request_cpus}
+
+        <exec_1>
+            <cmdline>
+               meds = ${file.meds.fullname}
+               F = ${list.inlist.fullname}
+               output = ${file.sof.fullname}
+            </cmdline>
+            execname = fitvd-collate
+            cmd_hyphen =  mixed_gnu
+            used = file.meds, list.inlist.chunks
+            was_generated_by = file.sof
+            ancestry = list.inlist.chunks:file.sof,file.meds:file.sof
+        </exec_1>
+        <list>
+            <inlist>
+                columns = chunks.fullname
+                depends = sof.file.sofchunk
+                dirpat = mepoch
+                sortkey = (chunks, True, False)
+
+                filepat = tile_generic
+                filetype = list
+                flabel = sof-chunk
+                fsuffix = list
+                ops_enddir = list/sof
+                rundir = list/sof
+            </inlist>
+        </list>
+        <file>
+            <chunks>
+                dirpat = mepoch
+                listonly = True
+                rundir = sof
+            </chunks>
+            <meds>
+            filetype =coadd_meds
+
+            # what goes into list?
+            query_table = miscfile
+            query_fields = tilename,filetype,band,proctag.tag
+            join proctag.pfw_attempt_id = miscfile.pfw_attempt_id
+            filetype=coadd_meds
+            band = i
+            tag = ${meds_proctag}
+            output_fields = filename
+
+            # description of list for wrapper
+            columns = meds.fullname
+    
+            # where to put the file
+            dirpat = mepoch
+            ops_enddir = meds
+            rundir = meds
+            </meds>
+
+            ### output files
+            <sof>
+                filetype = coadd_sof
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = sof
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = sof
+                rundir = sof
+            </sof>
+        </file>
+    </collate-sof>
+</module>

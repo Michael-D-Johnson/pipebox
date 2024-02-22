@@ -1,0 +1,69 @@
+band = ${bands}
+<module>
+    <extinction>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        <exec_1>
+            execname = compute_SFD98_coadd_bands
+            cmd_hyphen = mixed_gnu
+            used = file.det_cat
+            was_generated_by = file.ebv,file.xcorr
+            ancestry = file.det_cat:file.ebv, file.det_cat:file.xcorr
+            <cmdline>
+                i = ${file.det_cat.fullname}
+                c = ${cat_columns}
+                prefix = cat/${tilename}_r${reqnum}p${attnum:2}
+                bands = ${band}
+            </cmdline>
+        </exec_1>
+        <file>
+            ### inputs
+            <det_cat>
+                # how to get file data
+                depends det-catalog.file.det_cat
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = cat
+            </det_cat>
+
+            ### outputs
+            <ebv>
+                # what metadata to save
+                filetype = coadd_extinct_ebv
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = ebv-cat
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = cat
+                rundir = cat
+            </ebv>
+            <xcorr>
+                # what metadata to save
+                filetype = coadd_extinct_band
+
+                # how to name output file
+                filepat = tile_band
+                flabel = xcorr-cat
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = cat
+                rundir = cat
+            </xcorr>
+        </file>
+    </extinction>
+</module>

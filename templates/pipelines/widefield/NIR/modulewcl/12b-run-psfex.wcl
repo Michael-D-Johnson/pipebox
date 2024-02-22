@@ -1,0 +1,84 @@
+qa_psf_prefix = ${camsym}${expnum:8}_${band}_c${ccdnum:2}_r${reqnum}p${attnum:2}
+psfex_selfwhm= qa/psfex_selfwhm
+psfex_fwhm = qa/psfex_fwhm
+psfex_resids = qa/psfex_resids
+
+<module run-psfex>
+    wrappername = genwrap.py  
+    wrapperloop = ccdnum
+    modnamepat=${modnamepat_ccdnumband}
+
+    <file>
+        <psfex_cat>
+            filetype = cat_psfex
+            filepat = ccdnum_band
+            flabel = psfexcat
+            fsuffix = fits
+            dirpat = se
+            ops_enddir = cat
+            rundir = cat
+            savefiles = true
+        </psfex_cat>
+        <psfex_config>
+            filetype = config
+            filename = ${confignite}_default.psfex
+            dirpat = se
+            ops_enddir = config
+            rundir = config
+        </psfex_config>
+        <psfex_xml>
+            filetype = xml_psfex
+            filepat = ccdnum_band
+            flabel = psfex
+            fsuffix = xml
+            dirpat = se
+            ops_enddir = qa
+            rundir = qa
+            savefiles = true
+        </psfex_xml>
+        <psfex_model>
+            filetype = psfex_model
+            filepat = ccdnum_band
+            flabel = psfexcat
+            fsuffix = psf
+            dirpat = se
+            ops_enddir = psf
+            rundir = psf
+    	    savefiles = true
+        </psfex_model>
+        <cat_psfex_starlist>
+            filetype = cat_psfex_starlist
+            filepat = ccdnum_band
+            flabel = psfex-starlist
+            fsuffix = fits
+            dirpat = se
+            ops_enddir = psf
+            rundir = psf
+    	    savefiles = true
+        </cat_psfex_starlist>
+        <psfex_qa>
+                filetype = qa_psfex
+                fullname = ${psfex_selfwhm}_${qa_psf_prefix}_psfexcat.ps,${psfex_fwhm}_${qa_psf_prefix}_psfexcat.ps,${psfex_resids}_${qa_psf_prefix}_psfexcat.ps
+                dirpat = se
+                rundir = qa
+                ops_enddir = qa
+                savefiles = true
+         </psfex_qa>
+    </file>
+    <exec_1>
+        execname = psfex
+        used = file.psfex_cat,file.psfex_config
+        was_generated_by = file.psfex_xml,file.psfex_model,file.cat_psfex_starlist,file.psfex_qa
+        ancestry = file.psfex_cat:file.psfex_model,file.psfex_cat:file.cat_psfex_starlist
+        <cmdline>
+            _01_psfex_cat = ${file.psfex_cat.fullname}
+            c = ${file.psfex_config.fullname}
+            WRITE_XML = Y
+            XML_NAME = ${file.psfex_xml.fullname}
+            PSF_DIR = psf
+            OUTCAT_NAME = ${file.cat_psfex_starlist.fullname}
+            OUTCAT_TYPE = FITS_LDAC 
+            CHECKPLOT_NAME = ${psfex_selfwhm},${psfex_fwhm},${psfex_resids}
+        </cmdline>
+    </exec_1>
+</module>

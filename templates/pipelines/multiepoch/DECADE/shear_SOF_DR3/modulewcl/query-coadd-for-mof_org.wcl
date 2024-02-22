@@ -1,0 +1,70 @@
+<module>
+    <query-coadd-for-mof>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+
+        <exec_1>
+            <cmdline>
+                conf = ${file.mofconf.fullname}
+                output = ${file.fof.fullname}
+                meds_list = ${list.meds_list.fullname}
+                bands = i
+                plot = dummy.png
+            </cmdline>
+            execname = run_fitvd-make-fofs
+            cmd_hyphen =  alldouble
+            used = file.mofconf,list.meds_list.meds
+            was_generated_by = file.fof
+            ancestry = list.meds_list.meds:file.fof
+        </exec_1>
+        <list>
+            <meds_list>
+                exec = query_coadd_for_mof.py
+                args = --tile ${tilename} --me_proctag ${proctag} -s ${submit_des_db_section} -S prod -v 3 -o ${qoutfile} --meds --bandlist ${bands}
+                columns = meds.fullname, band
+                filepat = tile_generic
+                flabel = meds-list
+                fsuffix = list
+                dirpat = mepoch
+                rundir = list/mof
+                ops_enddir = list/mof
+            </meds_list>
+        </list>
+        <file>
+            <mofconf>
+                # what input file is named
+                filename = ${cfgver}_fitvd-${mof_config_ver}.yaml
+                filetype = config
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </mofconf>
+            <meds>
+                listonly = True
+                filetype = coadd_meds
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = meds
+             </meds>
+
+            ### output files
+             <fof>
+              # what metadata to save
+                filetype = coadd_mof_fof
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = fofslist
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = mof
+                rundir = mof
+             </fof>
+
+        </file>
+    </query-coadd-for-mof>
+</module>

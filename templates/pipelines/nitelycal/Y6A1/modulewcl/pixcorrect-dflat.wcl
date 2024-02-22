@@ -1,0 +1,68 @@
+<module>
+    <pixcorrect-dflat>
+        <exec_1>
+            ancestry = file.xtalked_dflat:file.pixcor_dflat, file.biascor:file.pixcor_dflat, file.lintable:file.pixcor_dflat, file.pixcor_dflat:file.pixcor_mini_dflat
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                bias = ${file.biascor.fullname}
+                blocksize = 64
+                gain = _flag
+                in = ${file.xtalked_dflat.fullname}
+                lincor = ${file.lintable.fullname}
+                mini = ${file.pixcor_mini_dflat.fullname}
+                out = ${file.pixcor_dflat.fullname}
+                v = _flag
+            </cmdline>
+            execname = pixcorrect_im
+            used = file.xtalked_dflat, file.biascor, file.lintable
+            was_generated_by = file.pixcor_dflat, file.pixcor_mini_dflat
+        </exec_1>
+        <file>
+            <biascor>
+                dirpat = precal
+                filepat = nite_ccdnum_noband
+                filetype = cal_biascor
+                flabel = biascor
+                fsuffix = fits
+                ops_enddir = biascor
+                rundir = biascor
+            </biascor>
+            <lintable>
+                dirpat = se
+                filename = ${lintablefile}
+                filetype = cal_lintable
+                rundir = lintable
+            </lintable>
+            <pixcor_dflat>
+                dirpat = precal
+                filepat = ccdnum_band
+                filetype = pixcor_dflat
+                flabel = pixcor-dflat
+                fsuffix = fits
+                ops_enddir = pixcor-dflat/${camsym}${expnum:8}
+                rundir = pixcor-dflat
+                savefiles = True
+            </pixcor_dflat>
+            <pixcor_mini_dflat>
+                dirpat = precal
+                filepat = ccdnum_band
+                filetype = pixcor_mini_dflat
+                flabel = pixcor-mini-dflat
+                fsuffix = fits
+                ops_enddir = pixcor-mini-dflat/${camsym}${expnum:8}
+                rundir = pixcor-mini-dflat
+                savefiles = True
+            </pixcor_mini_dflat>
+            <xtalked_dflat>
+                depends = crosstalk-dflat.file.xtalked
+                match = expnum, band, ccdnum
+                dirpat = precal
+                rundir = xtalked-dflat
+            </xtalked_dflat>
+        </file>
+        loopobj = file.xtalked_dflat
+        modnamepat = ${modnamepat_ccdnumband}
+        wrapperloop = expnum,band,ccdnum
+        wrappername = genwrap.py
+    </pixcorrect-dflat>
+</module>

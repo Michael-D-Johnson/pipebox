@@ -1,0 +1,73 @@
+<module>
+<combine-se-cat>
+        max_fwthreads = ${nthreads}
+        modnamepat = ${modnamepat_tile_expband}
+        wrappername = genwrap.py
+        wrapperloop = expnum,band
+        loopobj = list.se-ccd-cat
+        <exec_1>
+            execname = combine_cats.py
+            cmd_hyphen = mixed_gnu
+
+            used = list.se-ccd-cat.catfile
+            was_generated_by = file.coadd_scamp_fullcat
+            ancestry = list.se-ccd-cat.catfile:file.coadd_scamp_fullcat
+            <cmdline>
+                list = ${list.se-ccd-cat.fullname}
+                outcat = ${file.coadd_scamp_fullcat.fullname}
+            </cmdline>
+        </exec_1>
+        <list>
+            <se-ccd-cat>
+                # how to get list data
+                exec = query_coadd_astrorefine.py
+                args = --bandlist ${band} --proctag ${proctag} --tile ${tilename} --outfile ${qoutfile} --cattype CAT_FINALCUT --verbose 1 --fiat_table ${fiattable}
+
+                # how to create lists
+                divide_by = expnum,band
+                columns = catfile.fullname
+                sortkey = (ccdnum, True, False)
+
+                # what to name the list
+                filepat = tile_expband
+                flabel = se-ccd-cat
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+            </se-ccd-cat>
+        </list>
+        <file>
+            ### inputs
+            <catfile>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = cat/${expnum}
+            </catfile>
+
+            ### outputs
+            <coadd_scamp_fullcat>
+                # what metadata to save
+                filetype = coadd_cat_scamp_full
+
+                # how to name output file
+                filepat = tile_expband
+                flabel = expcat
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = cat
+                rundir = cat
+            </coadd_scamp_fullcat>
+        </file>
+    </combine-se-cat>
+</module>

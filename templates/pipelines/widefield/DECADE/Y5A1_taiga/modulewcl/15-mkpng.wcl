@@ -1,0 +1,140 @@
+<module>
+    <mkpng>
+        wrappername = genwrap.py
+        wrapperloop = expnum
+        modnamepat=${modnamepat_expband}
+        loopobj = list.in_img_list
+	
+	    <list>
+	        <in_img_list>
+                depends rowinterp-nullweight-immask.file.red_nullweight_immask
+		        filepat = exposure
+                flabel = immask-nullwgt
+                fsuffix = list
+
+                # where to store list
+                dirpat = se
+                ops_enddir = list
+                rundir = list
+
+                # what goes into list (normally is a query code)
+                #output_fields = filename
+                divide_by = expnum   # perhaps can default to wrapperloop
+			    columns = red_nullweight_immask.fullname
+			    sortkey = (ccdnum,True,False)
+	        </in_img_list>
+            <in_cat_list>
+                depends create-finalcut-catalog.file.cat_finalcut
+                filepat = exposure
+                flabel = red-fullcat
+                fsuffix = list
+
+                # where to store list
+                dirpat = se
+                ops_enddir = list
+                rundir = list
+
+                # what goes into list (normally is a query code)
+                #output_fields = filename
+                divide_by = expnum   # perhaps can default to wrapperloop
+		        columns = cat_finalcut.fullname
+	    	    sortkey = (ccdnum,True,False)
+            </in_cat_list>
+        </list>
+	    <file>
+            <red_nullweight_immask>
+                # what metadata to get
+                filetype = red_immask_nullwgt
+
+                # how to name the file
+                filepat = ccdnum_band
+                flabel = nullweight-immask
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                rundir = red/immask
+                listonly = True
+            </red_nullweight_immask>
+            <cat_finalcut>
+		        listonly = True
+                filetype = cat_finalcut
+                filepat = ccdnum_band
+                flabel = red-fullcat
+                fsuffix = fits
+                dirpat = se
+                rundir = cat
+            </cat_finalcut>
+            <png_proj>
+                filetype = png
+                filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}.png
+                dirpat = se
+                rundir = qa
+                ops_enddir = qa
+            </png_proj>
+	        <png_proj_tn>
+		        filetype = png     
+                filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_TN.png
+                dirpat = se
+                rundir = qa
+		        ops_enddir = qa
+	        </png_proj_tn>
+	        <png_ell>
+		        filetype = png     
+                filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_ell.png
+                dirpat = se
+                rundir = qa
+		        ops_enddir = qa
+                optional = true
+            </png_ell>
+ 	        <png_ell_tn>
+		        filetype = png     
+                filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_ell_TN.png
+                dirpat = se
+                rundir = qa
+		        ops_enddir = qa
+                optional = true
+	        </png_ell_tn>
+	        <png_focus>
+                filetype = png
+                filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_focus.png
+                dirpat = se
+                rundir = qa
+		        ops_enddir = qa
+            </png_focus>
+	        <png_focus_tn>
+                filetype = png
+                filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_focus_TN.png
+                dirpat = se
+                rundir = qa
+		        ops_enddir = qa
+            </png_focus_tn>
+	        <red_proj>
+		        filetype = png
+		        filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_proj.fits
+                flabel = proj
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = qa
+                rundir = qa
+                savefiles = false
+	        </red_proj>
+        </file>
+
+        <exec_1>
+            execname = projectDECamPNG
+            cmd_hyphen = alldouble
+            used = list.in_img_list.red_nullweight_immask,list.in_cat_list.cat_finalcut
+            was_generated_by = file.red_proj,file.png_proj,file.png_proj_tn
+            ancestry = list.in_img_list.red_nullweight_immask:file.red_proj,list.in_img_list.red_nullweight_immask:file.png_proj,list.in_img_list.red_nullweight_immask:file.png_proj_tn,list.in_img_list.red_nullweight_immask:file.red_proj
+            <cmdline>
+				_01_imglist = ${list.in_img_list.fullname}
+				_02_basename = qa/D${expnum:8}_${band}_r${reqnum}p${attnum:2}
+				catlist = ${list.in_cat_list.fullname}
+                NTHREADS_swarp = 1
+                NTHREADS_stiff = 1
+                noEll = _flag
+            </cmdline>
+        </exec_1>
+    </mkpng>
+</module>

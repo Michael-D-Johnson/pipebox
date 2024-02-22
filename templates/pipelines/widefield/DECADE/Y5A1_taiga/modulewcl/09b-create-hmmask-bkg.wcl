@@ -1,0 +1,67 @@
+<module create-bkg-img>
+    wrappername = genwrap.py
+    wrapperloop = ccdnum
+    modnamepat=${modnamepat_ccdnumband}
+
+    <file>
+        <sex_config>
+            filetype = config
+            filename = ${confignite}_default.sex
+            dirpat = se
+            ops_enddir = config/sex
+            rundir = config
+        </sex_config>
+        <sex_param>
+            filetype = config
+            filename = ${confignite}_sex.param_bkg
+            dirpat = se
+            ops_enddir = config/sex
+            rundir = config
+        </sex_param>
+        <red_nullweight_bkg>
+            # what metadata to get
+            filetype = red_bkg_nullwgt
+
+            # how to name the file
+            filepat = ccdnum_band
+            flabel = nullweight-bkg
+            fsuffix = fits
+
+            # where to put the file
+            dirpat = se
+            ops_enddir = red/bkg
+            rundir = red/bkg
+        </red_nullweight_bkg>
+        <red_hmmask_bkg>
+            filetype = red_bkg_hmmask
+            filepat = ccdnum_band
+            flabel = hmmask-bkg
+            fsuffix = fits
+            dirpat = se
+            ops_enddir = bkg/hmmask
+            rundir = bkg/hmmask
+            savefiles = false
+            compress_files = true
+        </red_hmmask_bkg>
+    </file>
+
+    <exec_1>
+        execname = sex
+        used = file.red_nullweight_bkg,file.sex_config,file.sex_param
+        was_generated_by = file.red_hmmask_bkg
+        ancestry = file.red_nullweight_bkg:file.red_hmmask_bkg
+        <cmdline>
+            _01_red_nullweight_bkg = ${file.red_nullweight_bkg.fullname}[0]
+            c = ${file.sex_config.fullname}
+            PARAMETERS_NAME = ${file.sex_param.fullname}
+            CATALOG_TYPE=NONE
+            FILTER = N
+            DETECT_THRESH = 1000
+            CHECKIMAGE_TYPE = BACKGROUND
+            CHECKIMAGE_NAME = ${file.red_hmmask_bkg.fullname}
+            WEIGHT_TYPE = MAP_WEIGHT
+            WEIGHT_IMAGE = ${file.red_nullweight_bkg.fullname}[2]
+            WEIGHT_THRESH = 1e-9
+        </cmdline>
+    </exec_1>
+</module>

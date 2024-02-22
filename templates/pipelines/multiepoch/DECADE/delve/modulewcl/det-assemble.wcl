@@ -1,0 +1,74 @@
+<module>
+    <det-assemble>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        <exec_1>
+            execname = coadd_assemble
+            cmd_hyphen = mixed_gnu
+            used = file.coadd_det_sci, file.coadd_det_wgt, file.coadd_det_msk
+            was_generated_by = file.coadd_det
+            ancestry = file.coadd_det_sci:file.coadd_det
+            <cmdline>
+                sci_file = ${file.coadd_det_sci.fullname}
+                wgt_file = ${file.coadd_det_wgt.fullname}
+                msk_file = ${file.coadd_det_msk.fullname}
+                band = det
+                outname = ${file.coadd_det.fullname}
+                xblock = ${assemble_xblock}
+                yblock = ${assemble_yblock}
+                maxcols = ${assemble_maxcols}
+                mincols = ${assemble_mincols}
+                no-keep_sci_zeros = _flag
+                magzero = ${mag_zero}
+                tilename = ${tilename}
+                tileid = ${tileid}
+                interp_image = MSK
+                ydilate = ${assemble_ydilate}
+            </cmdline>
+        </exec_1>
+        <file>
+            ### inputs
+            <coadd_det_sci>
+                # how to get file data
+                depends det-swarp-wgt.file.det_sci
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_det_sci>
+            <coadd_det_wgt>
+                # how to get file data
+                depends det-swarp-wgt.file.det_wgt
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_det_wgt>
+            <coadd_det_msk>
+                # how to get file data
+                depends det-swarp-msk.file.det_msk
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_det_msk>
+            ### outputs
+            <coadd_det>
+                # what metadata to save
+                filetype = coadd_det
+
+                # how to name output file
+                filepat = tile_det_nolabel
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = true
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = coadd
+                ops_enddir = coadd
+            </coadd_det>
+        </file>
+    </det-assemble>
+</module>

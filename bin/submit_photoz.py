@@ -3,7 +3,7 @@
 from pipebox import pipeline
 
 # initialize and get options
-print "Collecting data..."
+print("Collecting data...")
 photoz = pipeline.PhotoZ()
 args = photoz.args
 

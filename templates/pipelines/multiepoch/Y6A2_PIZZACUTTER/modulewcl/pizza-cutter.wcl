@@ -1,0 +1,200 @@
+<module>
+    <pizza-cutter>
+        modnamepat = ${modnamepat_tile_band}
+        wrappername = genwrap.py
+        wrapperloop = band
+        loopobj = file.pizza_cutter_yaml
+        max_fwthreads = 3
+        <exec_1>
+            <cmdline>
+                config = ${file.pizza_cutter_config.fullname}
+                info = ${file.pizza_cutter_yaml.fullname}
+                output-path = ${file.pizza_cutter.fullname}
+                log-level = warning
+                seed = 640572
+                use-tmpdir = _flag
+            </cmdline>
+            execname = des-pizza-cutter
+            cmd_hyphen =  alldouble
+            used = file.pizza_cutter_config, file.pizza_cutter_yaml, list.red.red,list.redbkg.bkg,list.redseg.seg,list.hdr.head,list.psfmod.psf,file.coadd,file.cat_gaia
+            was_generated_by = file.pizza_cutter
+            ancestry = file.pizza_cutter_config:file.pizza_cutter,file.pizza_cutter_yaml:file.pizza_cutter
+        </exec_1>
+        <list>
+          <psfmod>
+                depends query-for-pizza-cutter.list.medsfiles.psf
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # what to name list
+                filepat = tile_band
+                flabel = med-psfmodel
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = psf.fullname
+            </psfmod>
+            <red>
+                depends query-for-pizza-cutter.list.medsfiles.red
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # what to name list
+                filepat = tile_band
+                flabel = med-red
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = red.fullname,red.mag_zero
+            </red>
+            <hdr>
+                depends query-for-pizza-cutter.list.medsfiles.head
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # what to name list
+                filepat = tile_band
+                flabel = med-head
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = head.fullname
+            </hdr>
+            <redbkg>
+                depends query-for-pizza-cutter.list.medsfiles.bkg
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # what to name list
+                filepat = tile_band
+                flabel = med-red-bkg
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = bkg.fullname
+            </redbkg>
+            <redseg>
+                depends query-for-pizza-cutter.list.medsfiles.seg
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # how to name list
+                filepat = tile_band
+                flabel = med-red-segmap
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = seg.fullname
+            </redseg>
+        </list>
+        <file>
+            <cat_gaia>
+                filetype = cat_tile_gaia
+                filename = ${tilename}_GAIA_DR2_v1.fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = cat_gaia
+            </cat_gaia>
+            <coadd>
+                depends query-for-pizza-cutter-list.list.coadd
+                match = band
+    
+                dirpat = mepoch
+                rundir = coadd
+            </coadd>
+            <psf>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = se
+                rundir = psf
+            </psf>
+            <red>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = se
+                rundir = red
+            </red>
+            <bkg>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = bkg
+            </bkg>
+            <seg>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = seg
+            </seg>
+            <head>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = aux
+            </head>
+            <pizza_cutter_yaml>
+                depends query-for-pizza-cutter-list.file.pizza_cutter_yaml
+                match = band
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = pizza-cutter
+            </pizza_cutter_yaml>
+            <pizza_cutter_config>
+                filetype = config
+                filename = ${cfgver}_pizza-cutter-Y6A1v3.yaml
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = config
+            </pizza_cutter_config>
+            <pizza_cutter>
+                filetype = coadd_pizza_cutter
+                filename = ${tilename}_r${reqnum}p${attnum:2}_${band}_pizza-cutter-slices.fits.fz
+
+                # how to name output file
+                #filepat = tile_band
+                #flabel = pizza-cutter-slices
+                #fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = pizza-cutter
+                rundir = pizza-cutter
+                savefiles = true
+                compress_files = true
+            </pizza_cutter>
+        </file>
+    </pizza-cutter>
+</module>

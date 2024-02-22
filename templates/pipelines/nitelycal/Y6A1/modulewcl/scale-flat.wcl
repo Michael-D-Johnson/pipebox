@@ -1,0 +1,45 @@
+<module>
+    <scale-flat>
+        <exec_1>
+            ancestry = file.dflatcor:file.norm_dflatcor, file.normfile:file.norm_dflatcor
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                in = ${file.dflatcor.fullname}
+                normfactorfile = ${file.normfile.fullname}
+                out = ${file.norm_dflatcor.fullname}
+            </cmdline>
+            execname = scale_flat
+            used = file.dflatcor, file.normfile
+            was_generated_by = file.norm_dflatcor
+        </exec_1>
+        <file>
+            <dflatcor>
+                match = ccdnum, band
+                dirpat = precal
+                rundir = dflatcor
+    
+                depends mkdflatcor.file.dflatcor
+            </dflatcor>
+            <norm_dflatcor>
+                dirpat = precal
+                filepat = nite_ccdnum_band
+                filetype = cal_dflatcor
+                flabel = norm-dflatcor
+                fsuffix = fits
+                ops_enddir = norm-dflatcor
+                rundir = norm-dflat
+                savefiles = True
+            </norm_dflatcor>
+            <normfile>
+                depends find-flat-norm.file.normfile
+                dirpat = precal
+                rundir = QA
+                match = band
+            </normfile>
+        </file>
+        loopobj = file.dflatcor
+        modnamepat = ${modnamepat_nite_ccdnum_band}
+        wrapperloop = ccdnum, band
+        wrappername = genwrap.py
+    </scale-flat>
+</module>

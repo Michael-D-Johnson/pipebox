@@ -1,0 +1,115 @@
+<module>
+    <wavg>
+        max_fwthreads = ${nthreads}
+        modnamepat = ${modnamepat_tile_band}
+        wrappername = genwrap.py
+        wrapperloop = band
+        loopobj = list.secat
+        <exec_1>
+            <cmdline>
+                _01_coadd_cat = ${file.det_cat.fullname}
+                _02_list_cat = ${list.secat.fullname}
+                _03_outwavgcat = ${file.cat_wavg.fullname}
+                _04_outwavgcat = ${file.cat_wavg_oclink.fullname}
+                urall = ${uramin}
+                uraur = ${uramax}
+                udecll = ${udecmin}
+                udecur = ${udecmax}
+            </cmdline>
+            execname = computewavg.py
+            cmd_hyphen = mixed_gnu
+            used = list.secat.catfile, file.det_cat
+            was_generated_by = file.cat_wavg, file.cat_wavg_oclink
+        </exec_1>
+        <list>
+            <secat>
+                #### how to get list data
+                ###depends-newname = null-weight-for-coadd.file.red_immask
+
+                #### how to create lists
+                ###divide_by = band
+                ###columns = catfile.fullname, catfile.mag_zero
+                ###sortkey = fullname
+
+                # how to get list data
+                depends = bigquery.list.allfiles.cat
+
+                # how to create lists
+                divide_by = band
+                columns = catfile.fullname, catfile.mag_zero
+                sortkey = fullname
+                format = textcsv
+
+                # what to name the list
+                filepat = tile_band
+                flabel = wavg
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+            </secat>
+        </list>
+        <file>
+            ### input files
+            <det_cat>
+                depends det-catalog.file.det_cat
+
+                # where it lives in job scratch dir
+                dirpat = mepoch
+                rundir = cat
+            </det_cat>
+            <catfile>
+                listonly = True
+
+                #### how to name file
+                ###filepat = ccdnum_band
+                ###flabel = red-fullcat
+                ###fsuffix = fits
+
+                # where it lives in job scratch dir
+                dirpat = mepoch
+                rundir = cat/${expnum}
+            </catfile>
+
+            ### output files
+            <cat_wavg>
+                # what metadata to save
+                filetype = coadd_wavg
+
+                # how to name output file
+                filepat = tile_band
+                flabel = wavg
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = wavg
+                rundir = wavg
+            </cat_wavg>
+            <cat_wavg_oclink>
+                # what metadata to save
+                filetype = coadd_wavg_oclink
+
+                # how to name output file
+                filepat = tile_band
+                flabel = wavg-oclink
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = wavg
+                rundir = wavg
+            </cat_wavg_oclink>
+        </file>
+    </wavg>
+</module>

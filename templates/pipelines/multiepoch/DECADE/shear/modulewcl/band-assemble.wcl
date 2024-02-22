@@ -1,0 +1,80 @@
+<module>
+    <band-assemble>
+        modnamepat = ${modnamepat_tile_band}
+        wrappername = genwrap.py
+        wrapperloop = band
+        loopobj = file.coadd_sci
+        max_fwthreads = 3
+        <exec_1>
+            execname = coadd_assemble
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                sci_file = ${file.coadd_sci.fullname}
+                wgt_file = ${file.coadd_wgt.fullname}
+                msk_file = ${file.coadd_msk.fullname}
+                outname = ${file.coadd.fullname}
+                xblock = ${assemble_xblock}
+                yblock = ${assemble_yblock}
+                maxcols = ${assemble_maxcols}
+                mincols = ${assemble_mincols}
+                no-keep_sci_zeros = _flag
+                magzero = ${mag_zero}
+                tilename = ${tilename}
+                tileid = ${tileid}
+                interp_image = MSK
+                ydilate = ${assemble_ydilate}
+            </cmdline>
+            used = file.coadd_sci, file.coadd_wgt, file.coadd_msk
+            was_generated_by = file.coadd
+            ancestry = file.coadd_sci:file.coadd
+        </exec_1>
+        <file>
+            ### inputs
+            <coadd_sci>
+                # how to get file data
+                depends band-swarp-wgt.file.coadd_sci
+                match = band
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_sci>
+            <coadd_wgt>
+                # how to get file data
+                depends band-swarp-wgt.file.coadd_wgt
+                match = band
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_wgt>
+            <coadd_msk>
+                # how to get file data
+                depends band-swarp-msk.file.coadd_msk
+                match = band
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_msk>
+            ### outputs
+            <coadd>
+                # what metadata to save
+                filetype = coadd
+
+                # how to name output file
+                filepat = tile_band_nolabel
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = true
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = coadd
+                ops_enddir = coadd
+            </coadd>
+        </file>
+    </band-assemble>
+</module>

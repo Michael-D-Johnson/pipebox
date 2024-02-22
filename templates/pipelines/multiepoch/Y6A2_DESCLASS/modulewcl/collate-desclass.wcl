@@ -1,0 +1,60 @@
+<module>
+    <collate-desclass>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        wrapperloop = tilename
+        loopobj = list.inlist 
+        #max_fwthreads = ${request_cpus}
+
+        <exec_1>
+            <cmdline>
+               input = desclass/${tilename}_r${reqnum}p${attnum}_desclass-chunk-*.fits
+               # ${list.inlist.fullname}
+               output = ${file.desclass.fullname}
+            </cmdline>
+            execname = desclass-collate
+            cmd_hyphen =  mixed_gnu
+            used = list.inlist.chunks
+            was_generated_by = file.desclass
+            ancestry = list.inlist.chunks:file.desclass
+        </exec_1>
+        <list>
+            <inlist>
+                columns = chunks.fullname
+                depends = desclass.file.desclasschunk
+                dirpat = mepoch
+                sortkey = (chunks, True, False)
+
+                filepat = tile_generic
+                filetype = list
+                flabel = desclass-chunk
+                fsuffix = list
+                ops_enddir = list/desclass
+                rundir = list/desclass
+            </inlist>
+        </list>
+        <file>
+            <chunks>
+                dirpat = mepoch
+                listonly = True
+                rundir = desclass
+            </chunks>
+
+            ### output files
+            <desclass>
+                filetype = coadd_desclass
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = desclass
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = desclass
+                rundir = desclass
+                savefiles = True
+            </desclass>
+        </file>
+    </collate-desclass>
+</module>

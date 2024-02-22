@@ -1,0 +1,92 @@
+<module>
+    <det-create-psfex-catalog>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        req_vals = psfex_satur_level_shallow,psfex_satur_level_deep,psfex_satur_level_survey
+        <exec_1>
+            execname = sex
+            cmd_hyphen = allsingle
+            <cmdline>
+                _01_coadd = ${file.coadd_det.fullname}[0]
+                c = ${file.sex_config.fullname}
+                PARAMETERS_NAME = ${file.sex_param.fullname}
+                INTERP_TYPE = ALL
+                DETECT_MINAREA = 3
+                CATALOG_TYPE = FITS_LDAC
+                SATUR_LEVEL = ${psfex_satur_level_${depth}}
+                FILTER_NAME = ${file.sex_filter.fullname}
+                FLAG_IMAGE = ${file.coadd_det.fullname}[1]
+                WEIGHT_IMAGE = ${file.coadd_det.fullname}[2]
+                STARNNW_NAME = ${file.sex_nnw.fullname}
+                CATALOG_NAME = ${file.psfex_cat.fullname}
+                DETECT_THRESH = 5.0
+            </cmdline>
+            used = file.coadd_det, file.sex_config, file.sex_param, file.sex_filter, file.sex_nnw
+            was_generated_by = file.psfex_cat
+            ancestry = file.coadd_det:file.psfex_cat
+        </exec_1>
+        <file>
+            ### inputs
+            <coadd_det>
+                # how to get file data
+                depends det-assemble.file.coadd_det
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_det>
+            <sex_config>
+                # what input file is named
+                filename = ${sex_psfex_config_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_config>
+            <sex_param>
+                # what input file is named
+                filename = ${sex_psfex_param_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_param>
+            <sex_filter>
+                # what input file is named
+                filename = ${sex_psfex_conv_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_filter>
+            <sex_nnw>
+                # what input file is named
+                filename = ${sex_psfex_nnw_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_nnw>
+
+            ### outputs
+            <psfex_cat>
+                # what metadata to save
+                filetype = coadd_det_psfcat
+
+                # how to name output file
+                filepat = tile_det
+                flabel = psfcat
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = cat
+                rundir = cat
+            </psfex_cat>
+        </file>
+    </det-create-psfex-catalog>
+</module>

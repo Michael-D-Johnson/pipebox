@@ -1,0 +1,49 @@
+<module>
+    <skycompare-pixcor>
+        <exec_1>
+            ancestry = file.pixcor_dflat_binned_fp:file.compare_dflat_binned_fp
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                edge = 1
+                in = ${file.pixcor_dflat_binned_fp.fullname}
+                out = ${file.compare_dflat_binned_fp.fullname}
+                ref = ${file.cal_dflatref.fullname}
+                v = _flag
+            </cmdline>
+            execname = mini_compare
+            used = file.pixcor_dflat_binned_fp,file.cal_dflatref
+            was_generated_by = file.compare_dflat_binned_fp
+        </exec_1>
+        <file>
+            <cal_dflatref>
+                dirpat = precal
+                filetype = cal_dflatref
+                match = band
+                output_fields = filename, band
+                query_fields = filetype
+                query_table = calibration
+                rundir = dflatref/${refcampaign}
+            </cal_dflatref>
+            <compare_dflat_binned_fp>
+                dirpat = precal
+                filepat = exposure
+                filetype = compare_dflat_binned_fp
+                flabel = compare-dflat-binned-fp
+                fsuffix = fits
+                ops_enddir = binned-fp/${camsym}${expnum:8}
+                rundir = binned-fp
+                savefiles = True
+            </compare_dflat_binned_fp>
+            <pixcor_dflat_binned_fp>
+                depends skycombine-pixcor-dflat.file.binned_fp
+                match = expnum, band
+                dirpat = precal
+                rundir = binned-fp
+            </pixcor_dflat_binned_fp>
+        </file>
+        loopobj = file.pixcor_dflat_binned_fp
+        modnamepat = ${modnamepat_expband}
+        wrapperloop = expnum,band
+        wrappername = genwrap.py
+    </skycompare-pixcor>
+</module>

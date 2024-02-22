@@ -1,0 +1,42 @@
+<module>
+    <piff-qa>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        max_fwthreads = ${nthreads}
+        <exec_1>
+            <cmdline>
+                tilename = ${tilename}
+                me_proctag = Y6A2_COADD
+                piff_tag = Y6A1_PIFF
+                o = ${file.piffqa.fullname}
+                s = db-desoper
+                S = prod
+            </cmdline>
+            execname = get_piff_qa_for_tile.py
+            cmd_hyphen =  mixed_gnu
+            #used = 
+            was_generated_by = file.piffqa
+            # ancestry = 
+        </exec_1>
+        <file>
+            <piffqa>
+                # what metadata to save
+                filetype = medslist
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = piff-info
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = piff
+                rundir = piff
+            </piffqa>
+        </file>
+    </piff-qa>
+</module>

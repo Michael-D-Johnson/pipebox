@@ -1,0 +1,31 @@
+<module>
+    <ingest-se-objects>
+        wrappername = genwrap.py
+        wrapperloop = ccdnum
+        modnamepat=${modnamepat_ccdnumband}
+
+        <file>
+            <cat_finalcut>
+                filetype = cat_finalcut
+                filepat = ccdnum_band
+                flabel = red-fullcat
+                fsuffix = fits
+                dirpat = se
+                rundir = cat
+                ops_enddir = cat
+            </cat_finalcut>
+        </file>
+
+        <exec_1>
+            execname = catalog_ingest.py
+            used = file.cat_finalcut
+            <cmdline>
+                request = ${reqnum}
+                filename = ${file.cat_finalcut.fullname}
+                filetype = ${file.cat_finalcut.filetype}
+                temptable = ${se_object_table}
+                targettable = ${se_object_table}
+            </cmdline>
+        </exec_1>
+    </ingest-se-objects>
+</module>

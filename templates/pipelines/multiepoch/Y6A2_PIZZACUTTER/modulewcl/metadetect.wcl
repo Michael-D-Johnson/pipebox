@@ -1,0 +1,57 @@
+<module>
+    <metadetect>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        wrapperloop = tilename
+        #max_fwthreads = 1
+        <exec_1>
+            <cmdline>
+                _01_r_band = pizza-cutter/${tilename}_r${reqnum}p${attnum:2}_r_pizza-cutter-slices.fits.fz
+                _02_i_band = pizza-cutter/${tilename}_r${reqnum}p${attnum:2}_i_pizza-cutter-slices.fits.fz
+                _03_z_band = pizza-cutter/${tilename}_r${reqnum}p${attnum:2}_z_pizza-cutter-slices.fits.fz
+                shear-bands="1,1,1"
+                config = ${file.metadetect_config.fullname}
+                output-path = ${file.metadetect.fullname}
+                seed = 640572
+                n-jobs = 3
+            </cmdline>
+            execname = run-metadetect-on-slices
+            cmd_hyphen =  alldouble
+            used = file.metadetect_config #, file.pizza_cutter
+            was_generated_by = file.metadetect
+            ancestry =file.metadetect_config:file.metadetect #,file.pizza_cutter:file.metadetect
+        </exec_1>
+        <file>
+            #<pizza_cutter>
+            #    depends pizza-cutter.file.pizza_cutter
+
+                # where input file lives in jobroot
+             #   dirpat = mepoch
+             #   rundir = pizza-cutter
+            #</pizza_cutter>
+            <metadetect_config>
+                filetype = config
+                filename = ${cfgver}_metadetect-Y6A1v2.yaml
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = config
+            </metadetect_config>
+            <metadetect>
+                filetype = coadd_metadetect
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = metadetect
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = pizza-cutter
+                rundir = pizza-cutter
+                savefiles = true
+                compress_files = true
+            </metadetect>
+        </file>
+    </metadetect>
+</module>

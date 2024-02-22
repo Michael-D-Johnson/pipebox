@@ -1,0 +1,64 @@
+<module>
+    <crosstalk-bias>
+        <exec_1>
+            ancestry = file.raw:file.xtalked, file.xtalkcoeff:file.xtalked, file.hupdate:file.xtalked
+            <cmdline>
+                _01_raw = ${file.raw.fullname}
+                _02_xtalked = xtalked-bias/${camsym}${expnum:8}_c%02d_r${reqnum}p${attnum:2}_bias.fits
+                ccdlist = ${ccdnum}
+                crosstalk = ${file.xtalkcoeff.fullname}
+                overscanfunction = 0
+                overscanorder = 1
+                overscansample = 1
+                overscantrim = 5
+                photflag = ${photflagvar}
+                postsatmask = _flag
+                replace = ${file.hupdate.fullname}
+                verbose = 3
+            </cmdline>
+            execname = DECam_crosstalk
+            used = file.raw, file.xtalkcoeff, file.hupdate
+            was_generated_by = file.xtalked
+        </exec_1>
+        <file>
+            <hupdate>
+                dirpat = se
+                filename = ${hupdatefile}
+                filetype = config
+                rundir = config
+            </hupdate>
+            <raw>
+                dirpat = raw
+                expnum = ${bias_expnum}
+                filetype = raw
+                match = expnum
+                obstype = zero
+                output_fields = filename, expnum
+                qouttype = wcl
+                query_fields = expnum
+                query_table = exposure
+                rundir = raw
+            </raw>
+            <xtalkcoeff>
+                dirpat = se
+                filename = ${xtalkcoefffile}
+                filetype = config
+                rundir = config
+            </xtalkcoeff>
+            <xtalked>
+                dirpat = precal
+                filepat = ccdnum_noband
+                filetype = xtalked_bias
+                flabel = bias
+                fsuffix = fits
+                ops_enddir = xtalked-bias/${camsym}${expnum:8}
+                rundir = xtalked-bias
+                savefiles = True
+            </xtalked>
+        </file>
+        loopobj = file.raw
+        modnamepat = ${modnamepat_exp_noband}
+        wrapperloop = expnum
+        wrappername = genwrap.py
+    </crosstalk-bias>
+</module>

@@ -1,0 +1,95 @@
+<module>
+    <band-create-psfex-catalog>
+        max_fwthreads = ${nthreads}
+        modnamepat = ${modnamepat_tile_band}
+        wrappername = genwrap.py
+        wrapperloop = band
+        loopobj = file.coadd
+        req_vals = psfex_satur_level_g_shallow,psfex_satur_level_r_shallow,psfex_satur_level_i_shallow,psfex_satur_level_z_shallow,psfex_satur_level_g_deep,psfex_satur_level_r_deep,psfex_satur_level_i_deep,psfex_satur_level_z_deep,psfex_satur_level_u_survey,psfex_satur_level_g_survey,psfex_satur_level_r_survey,psfex_satur_level_i_survey,psfex_satur_level_z_survey, psfex_satur_level_Y_survey
+        <exec_1>
+            execname = sex
+            cmd_hyphen = allsingle
+            <cmdline>
+                _01_coadd = ${file.coadd.fullname}[0]
+                c = ${file.sex_config.fullname}
+                PARAMETERS_NAME = ${file.sex_param.fullname}
+                INTERP_TYPE = ALL
+                DETECT_MINAREA = 3
+                CATALOG_TYPE = FITS_LDAC
+                SATUR_LEVEL = ${psfex_satur_level_${band}_${depth}}
+                FILTER_NAME = ${file.sex_filter.fullname}
+                FLAG_IMAGE = ${file.coadd.fullname}[1]
+                WEIGHT_IMAGE = ${file.coadd.fullname}[2]
+                STARNNW_NAME = ${file.sex_nnw.fullname}
+                CATALOG_NAME = ${file.psfex_cat.fullname}
+                DETECT_THRESH = 5.0
+            </cmdline>
+            used = file.coadd, file.sex_config, file.sex_param, file.sex_filter, file.sex_nnw
+            was_generated_by = file.psfex_cat
+            ancestry = file.coadd:file.psfex_cat
+        </exec_1>
+        <file>
+            <coadd>
+                # how to get file data
+                depends band-assemble.file.coadd
+                match = band
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd>
+            <sex_config>
+                # what input file is named
+                filename = ${sex_psfex_config_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_config>
+            <sex_param>
+                # what input file is named
+                filename = ${sex_psfex_param_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_param>
+            <sex_filter>
+                # what input file is named
+                filename = ${sex_psfex_conv_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_filter>
+            <sex_nnw>
+                # what input file is named
+                filename = ${sex_psfex_nnw_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_nnw>
+
+            ### outputs
+            <psfex_cat>
+                # what metadata to save
+                filetype = coadd_psfcat
+
+                # how to name output file
+                filepat = tile_band
+                flabel = psfcat
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = cat
+                rundir = cat
+            </psfex_cat>
+        </file>
+    </band-create-psfex-catalog>
+</module>

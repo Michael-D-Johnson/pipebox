@@ -1,0 +1,110 @@
+<module>
+    <immask>
+        wrappername = genwrap.py
+        wrapperloop = expnum
+        modnamepat=${modnamepat_expband}
+        loopobj = list.in_img_list
+        <list>
+            <in_img_list>
+                depends hmmask.file.red_hmmasked
+                filepat = exposure
+                flabel = hmmask
+                fsuffix = list
+
+                # where to store list
+                dirpat = se
+                ops_enddir = list
+                rundir = list
+
+                # what goes into list (normally is a query code)
+                divide_by = expnum   # perhaps can default to wrapperloop
+                columns = red_hmmasked.fullname
+                sortkey = (ccdnum,True,False)
+            </in_img_list>
+            <in_streak_list>
+                depends hmmask.file.cat_hstreak
+                filepat = exposure
+                flabel = cat_hstreak
+                fsuffix = list
+
+                # where to store list
+                dirpat = se
+                ops_enddir = list
+                rundir = list
+
+                # what goes into list (normally is a query code)
+                divide_by = expnum   # perhaps can default to wrapperloop
+                columns = cat_hstreak.fullname
+                sortkey = (ccdnum,True,False)
+            </in_streak_list>
+        </list>
+        <file>
+            <red_hmmasked>
+                listonly = True
+                filetype = red_hmmask
+                filepat = ccdnum_band
+                flabel = hmmasked
+                fsuffix = fits
+                dirpat = se
+                rundir = red/immask
+                compress_files = true
+            </red_hmmasked>
+    	    <cat_hstreak>
+                listonly = True
+                filetype = cat_hstreak
+                filepat = ccdnum_band
+                flabel = hstreak
+                fsuffix = fits
+                dirpat = se
+                rundir = aux
+            </cat_hstreak>
+            <red_immasked>
+                filetype = red_immask
+                filepat = ccdnum_band
+                flabel = immasked
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/immask
+                rundir = red/immask
+                savefiles = true
+                compress_files = true
+            </red_immasked>
+            <cat_streak>
+                filetype = cat_streak
+                filename = D${expnum:8}_${band}_c${ccdnum:2}_r${reqnum}p${attnum:2}_streak.fits
+                filepat = ccdnum_band
+                dirpat = se
+                ops_enddir = aux
+                optional = true
+                rundir = aux
+                savefiles = true
+            </cat_streak>
+            <immask_plotfile>
+                filetype = qa_immask
+                fullname = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_streak.pdf
+                dirpat = se
+                rundir = qa
+                ops_enddir = qa
+                savefiles=true
+            </immask_plotfile>
+        </file>
+        <exec_1>
+            execname = connect_streaks
+     	    cmd_hyphen = alldouble
+            used = list.in_img_list.red_hmmasked,list.in_streak_list.cat_hstreak
+            was_generated_by = file.red_immasked,file.cat_streak,file.immask_plotfile
+            ancestry = list.in_img_list.red_hmmasked:file.red_immasked,list.in_streak_list.cat_hstreak:file.cat_streak,list.in_streak_list.cat_hstreak:file.immask_plotfile
+            <cmdline>
+    	        image_file = ${list.in_img_list.fullname}
+	            streak_file = ${list.in_streak_list.fullname}
+                streak_name_in = _hstreak
+                streak_name_out = _streak
+                image_name_in = _hmmasked
+                image_name_out = _immasked
+                plotfile = ${file.immask_plotfile.fullname}
+                max_extrapolate = 0.15
+                verbose = _flag
+            </cmdline>
+        </exec_1>
+    </immask>
+</module>

@@ -1,0 +1,38 @@
+<module>
+    <skycompress-dflatcor>
+        <exec_1>
+            ancestry = file.dflatcor:file.mini_dflatcor
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                blocksize = 64
+                in = ${file.dflatcor.fullname}
+                skyfilename = ${file.mini_dflatcor.fullname}
+            </cmdline>
+            execname = sky_compress
+            used = file.dflatcor
+            was_generated_by = file.mini_dflatcor
+        </exec_1>
+        <file>
+            <dflatcor>
+                depends mkdflatcor.file.dflatcor
+                dirpat = precal
+                rundir = dflatcor
+                match = ccdnum, band
+            </dflatcor>
+            <mini_dflatcor>
+                dirpat = precal
+                filepat = nite_ccdnum_band
+                filetype = mini_dflatcor
+                flabel = mini-dflat
+                fsuffix = fits
+                ops_enddir = mini-dflatcor
+                rundir = mini-dflatcor
+                savefiles = True
+            </mini_dflatcor>
+        </file>
+        loopobj = file.dflatcor
+        modnamepat = ${modnamepat_nite_ccdnum_band}
+        wrapperloop = ccdnum, band
+        wrappername = genwrap.py
+    </skycompress-dflatcor>
+</module>

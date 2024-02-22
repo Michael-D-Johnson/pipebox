@@ -1,17 +1,17 @@
 import os
 import time
-import ConfigParser
-from opstoolkit import jiracmd
+import configparser as ConfigParser
+from .jiracmd import Jira
 
 def get_con(jira_section, retry = 3,sleep = 15):
     num_retries = 0
     while num_retries < retry:
         try:
-            return jiracmd.Jira(jira_section)
+            return Jira(jira_section)
         except:
             num_retries += 1
             time.sleep(sleep)
-            print "JIRA Connection Error...Retry #{num}".format(num=num_retries)
+            print("JIRA Connection Error...Retry #{num}".format(num=num_retries))
 
 def does_comment_exist(con,reqnum=None):
         key= "DESOPS-%s" % reqnum

@@ -1,0 +1,93 @@
+<module>
+    <finalcut-assess>
+        wrappername = genwrap.py
+        modnamepat=${modnamepat_expband}
+        loopobj = list.cat_list
+        <list>
+            <cat_list>
+                depends create-finalcut-catalog.file.cat_finalcut
+
+                filepat = exposure
+                flabel = cat-finalcut
+                fsuffix = list
+
+                # where to store list
+                dirpat = se
+                ops_enddir = list
+                rundir = list
+
+                # what goes into list (normally is a query code)
+                #output_fields = filename
+                divide_by = expnum   # perhaps can default to wrapperloop
+                columns = cat_finalcut.fullname
+                sortkey = (ccdnum,True,False)
+            </cat_list>
+        </list>
+        <file>
+            <cat_finalcut>
+                listonly = True
+                filetype = cat_finalcut
+                filepat = ccdnum_band
+                flabel = red-fullcat
+                fsuffix = fits
+                dirpat = se
+                rundir = cat
+                ops_enddir = cat
+            </cat_finalcut>
+            <qa_assess_nomad>
+                filetype = qa_assess
+                filepat = exposure
+                filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_nomad.png
+                dirpat = se
+                ops_enddir = qa
+                rundir = qa
+                optional = true
+            </qa_assess_nomad>
+            <qa_assess_apass>
+                filetype = qa_assess
+                filepat = exposure
+                filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_apass.png
+                dirpat = se
+                ops_enddir = qa
+                rundir = qa
+                optional = true
+            </qa_assess_apass>
+            <qa_assess_des>
+                filetype = qa_assess
+                filepat = exposure
+                filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_des.png
+                dirpat = se
+                ops_enddir = qa
+                rundir = qa
+                optional = true
+            </qa_assess_des>
+            <qa_assess_magplot>
+                filetype = qa_assess
+                filepat = exposure
+                filename = D${expnum:8}_${band}_r${reqnum}p${attnum:2}_magplot.png
+                dirpat = se
+                ops_enddir = qa
+                rundir = qa
+                optional = true
+            </qa_assess_magplot>
+        </file>
+
+        <exec_1>
+            execname = assess_SE_products.py
+	 	    cmd_hyphen = alldouble
+            used = list.cat_list.cat_finalcut
+            was_generated_by = file.qa_assess_nomad,file.qa_assess_magplot,file.qa_assess_apass,file.qa_assess_des
+            ancestry = list.cat_list.cat_finalcut:file.qa_assess_nomad,list.cat_list.cat_finalcut:file.qa_assess_apass,list.cat_list.cat_finalcut:file.qa_assess_magplot, list.cat_list.cat_finalcut:file.qa_assess_des
+            <cmdline>
+                attid = ${pfw_attempt_id}
+                qaplot = _flag
+                froot = qa/D${expnum:8}_${band}_r${reqnum}p${attnum:2}
+                updateDB = _flag
+                list = ${list.cat_list.fullname}
+                over_table = FINALCUT_EVAL
+                verbose = _flag
+                S = DECADE
+            </cmdline>
+        </exec_1>
+    </finalcut-assess>
+</module>

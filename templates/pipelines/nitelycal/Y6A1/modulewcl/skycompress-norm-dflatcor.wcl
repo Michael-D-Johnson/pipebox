@@ -1,0 +1,38 @@
+<module>
+    <skycompress-norm-dflatcor>
+        <exec_1>
+            ancestry = file.norm_dflatcor:file.mini_norm_dflatcor
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                blocksize = 64
+                in = ${file.norm_dflatcor.fullname}
+                skyfilename = ${file.mini_norm_dflatcor.fullname}
+            </cmdline>
+            execname = sky_compress
+            used = file.norm_dflatcor
+            was_generated_by = file.mini_norm_dflatcor
+        </exec_1>
+        <file>
+            <mini_norm_dflatcor>
+                dirpat = precal
+                filepat = nite_ccdnum_band
+                filetype = mini_dflatcor
+                flabel = mini-norm-dflat
+                fsuffix = fits
+                ops_enddir = mini-norm-dflatcor
+                rundir = mini-norm-dflatcor
+                savefiles = True
+            </mini_norm_dflatcor>
+            <norm_dflatcor>
+                match = ccdnum, band
+                depends scale-flat.file.norm_dflatcor
+                dirpat = precal
+                rundir = norm-dflat
+            </norm_dflatcor>
+        </file>
+        loopobj = file.norm_dflatcor
+        modnamepat = ${modnamepat_unitname_ccdnum_band}
+        wrapperloop = ccdnum, band
+        wrappername = genwrap.py
+    </skycompress-norm-dflatcor>
+</module>

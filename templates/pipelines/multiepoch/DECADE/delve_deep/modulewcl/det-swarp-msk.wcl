@@ -1,0 +1,99 @@
+<module>
+    <det-swarp-msk>
+        wrappername = genwrap.py
+        modnamepat = ${modnamepat_tile_generic}
+        band=${det_bands}
+        <exec_1>
+            execname = swarp
+            cmd_hyphen = allsingle
+            used = file.band_sci, file.band_msk, file.swarp_config
+            was_generated_by = file.det_tmpsci, file.det_msk
+            ancestry = file.band_sci:file.det_tmpsci,file.band_msk:file.det_msk
+            <cmdline>
+                _01_sci = ${file.band_sci.fullname}
+                c = ${file.swarp_config.fullname}
+                WEIGHTOUT_NAME = ${file.det_msk.fullname}
+                CENTER = ${ra_cent},${dec_cent}
+                RESAMPLE = Y
+                RESAMPLING_TYPE = NEAREST
+                COPY_KEYWORDS = BUNIT,TILENAME,TILEID
+                PIXEL_SCALE = ${pixelscale}
+                IMAGE_SIZE = ${naxis1},${naxis2}
+                IMAGEOUT_NAME = ${file.det_tmpsci.fullname}
+                COMBINE_TYPE = AVERAGE
+                WEIGHT_IMAGE = ${file.band_msk.fullname}
+                NTHREADS = ${nthreads}
+                BLANK_BADPIXELS = Y
+            </cmdline>
+        </exec_1>
+        <file>
+            ##### input files
+            <swarp_config>
+                # what the input files are named
+                filename = ${swarp_config_file}
+
+                # where the input files go in jobroot
+                dirpat = mepoch
+                rundir = config
+            </swarp_config>
+            <band_sci>
+                # how to input file is named
+                filepat = tile_band
+                flabel = sci
+                fsuffix = fits
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </band_sci>
+            <band_msk>
+                # how to input file is named
+                filepat = tile_band
+                flabel = msk
+                fsuffix = fits
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </band_msk>
+
+            ##### output files
+            <det_tmpsci>
+                # what metadata to save
+                filetype = coadd_det_tmpsci
+
+                # how to name output file
+                filepat = tile_det
+                flabel = tmpsci
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = coadd
+                ops_enddir = coadd
+            </det_tmpsci>
+            <det_msk>
+                # what metadata to save
+                filetype = coadd_det_msk
+
+                # how to name output file
+                filepat = tile_det
+                flabel = msk
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = coadd
+                ops_enddir = coadd
+            </det_msk>
+        </file>
+    </det-swarp-msk>
+</module>

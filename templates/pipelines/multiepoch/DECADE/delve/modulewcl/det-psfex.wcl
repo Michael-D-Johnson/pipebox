@@ -1,0 +1,113 @@
+qa_psf_prefix = ${tilename}_r${reqnum}p${attnum:2}_${band}
+psfex_selfwhm= qa/psfex_selfwhm
+psfex_fwhm = qa/psfex_fwhm
+psfex_resids = qa/psfex_resids
+
+<module>
+    <det-psfex>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        band = det
+        <exec_1>
+            execname = psfex
+            cmd_hyphen = allsingle
+            used = file.psfex_config, file.psfcat
+            was_generated_by = file.psfex_xml, file.psfex_model, file.cat_psfex_starlist,file.psfex_qa
+            ancestry = file.psfcat:file.psfex_model
+            <cmdline>
+                _01_psfcat = ${file.psfcat.fullname}
+                c = ${file.psfex_config.fullname}
+                OUTCAT_NAME = ${file.cat_psfex_starlist.fullname}
+                XML_NAME = ${file.psfex_xml.fullname}
+                NTHREADS = ${nthreads}
+                PSF_DIR = psf
+                CHECKPLOT_NAME = ${psfex_selfwhm},${psfex_fwhm},${psfex_resids}
+                SAMPLE_MINSN = 100
+            </cmdline>
+        </exec_1>
+        <file>
+            ### inputs
+            <psfex_config>
+                # what the input files are named
+                filename = ${psfex_config_file}
+
+                # where the input files go in jobroot
+                dirpat = mepoch
+                rundir = config
+            </psfex_config>
+            <psfcat>
+                # how to get file data
+                depends det-create-psfex-catalog.file.psfex_cat
+
+                # where the input files go in jobroot
+                dirpat = mepoch
+                rundir = cat
+            </psfcat>
+
+            ### outputs
+            <psfex_qa>
+                filetype = coadd_qa_psfex
+                fullname = ${psfex_selfwhm}_${qa_psf_prefix}_psfcat.ps,${psfex_fwhm}_${qa_psf_prefix}_psfcat.ps,${psfex_resids}_${qa_psf_prefix}_psfcat.ps
+                dirpat = mepoch
+                rundir = qa
+                ops_enddir = qa
+                savefiles = true
+         </psfex_qa>
+            <psfex_xml>
+                # what metadata to save
+                filetype = coadd_xml_psfex
+
+                # how to name output file
+                filepat = tile_det
+                flabel = psfex
+                fsuffix = xml
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = qa
+                rundir = qa
+            </psfex_xml>
+            <psfex_model>
+                # what metadata to save
+                filetype = coadd_det_psfex_model
+
+                # how to name output file
+                #     must name same as input file except extension
+                filepat = tile_det
+                flabel = psfcat
+                fsuffix = psf
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = psf
+                rundir = psf
+            </psfex_model>
+            <cat_psfex_starlist>
+                # what metadata to save
+                filetype = coadd_det_cat_psfex_starlist
+
+                # how to name output file
+                filepat = tile_det
+                flabel = psfex-starlist
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = psf
+                rundir = psf
+            </cat_psfex_starlist>
+        </file>
+    </det-psfex>
+</module>

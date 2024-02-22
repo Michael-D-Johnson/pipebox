@@ -1,0 +1,51 @@
+<module>
+    <rowinterp-nullweight-immask>
+        wrappername = genwrap.py
+        wrapperloop = ccdnum,band
+        modnamepat = ${modnamepat_ccdnumband}
+        <file>
+            <red_immasked>
+                filetype = red_immask
+                filepat = ccdnum_band
+                flabel = immasked
+                fsuffix = fits
+                dirpat = se
+                rundir = red/immask
+            </red_immasked>
+            <red_nullweight_immask>
+                # what metadata to get
+                filetype = red_immask_nullwgt
+
+                # how to name the file
+                filepat = ccdnum_band
+                flabel = nullweight-immask
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                ops_enddir = red/immask
+                rundir = red/immask
+
+                # whether to bring file home
+                savefiles = false
+                compress_files = true
+            </red_nullweight_immask>
+        </file>
+        <exec_1>
+            execname = rowinterp_nullweight
+            used = file.red_immasked
+            was_generated_by = file.red_nullweight_immask
+            ancestry = file.red_immasked:file.red_nullweight_immask
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                i = ${file.red_immasked.fullname}
+                o = ${file.red_nullweight_immask.fullname}
+                interp_mask = TRAIL,CRAY,BPM
+                invalid_mask = EDGE
+                max_cols = 50
+                v = _flag
+                null_mask = BADAMP,EDGEBLEED,EDGE,CRAY
+            </cmdline>
+        </exec_1>
+    </rowinterp-nullweight-immask>
+</module>

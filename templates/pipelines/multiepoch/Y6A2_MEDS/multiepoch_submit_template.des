@@ -1,0 +1,57 @@
+{% extends "supportwcl/generic_submit.des" %}
+{% block content %}
+
+{% if args.inputcals_file %}
+<<include {{args.inputcals_file}}>>
+{% else %}
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/{{args.campaign}}/inputcals/y6a1_v1_inputs.des>>
+{% endif %}
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/{{args.campaign}}/modulewcl/modnamepat.wcl>>
+
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/{{args.campaign}}/modulewcl/medsquery.wcl>>
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/{{args.campaign}}/modulewcl/piff-qa.wcl>>
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/{{args.campaign}}/modulewcl/run-desmeds.wcl>>
+master_use_fwthreads = False
+
+# these 2 are for debugging purposes
+purge_job_dir = never
+compress_cleanup = False
+det_bands = {{args.det_bands}}
+
+basket = {{args.tile}} # FIX THIS
+proctag = {{args.proctag}}
+depth= survey
+mosaictype = UNCHANGED
+
+tilename = {{args.tile}}
+unitname = ${tilename}
+coadd_id = {{args.coadd_id}}
+
+bands = {{ args.bands }}
+
+{% if args.rundir %}
+ops_run_dir = {{ args.rundir }}
+{% else %}
+ops_run_dir = ${project}/${pipeline}/${campaign}/r${reqnum}/${unitname}/p${attnum:2}
+{% endif %}
+
+nthreads = {{ args.nthreads }}
+
+
+save_run_vals = tilename, jira_id
+
+<<inclfunc mepipelineappintg.mepochmisc.get_tile_info(submit_des_services, submit_des_db_section, tilename)>>
+
+request_cpus = {{args.request_cpus}}
+######################################################################
+blocklist = meds
+<block>
+    <meds>
+        modulelist = medsquery,piff-qa,run-desmeds
+    </meds>
+</block>
+
+
+{% endblock %}
+
+

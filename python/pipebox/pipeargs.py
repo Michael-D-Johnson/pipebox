@@ -50,6 +50,7 @@ class PipeArgs(object):
                              stored, e.g., $ARCHIVE/-->ACT<--/finalcut/')
         parser.add('--rundir',help='Archive directory structure')
         parser.add('--http',help='The machine to copy files through: desar0, desar1,desar2')
+        
         # JIRA arguments
         parser.add('--jira_parent',help='JIRA parent ticket under which\
                              new ticket will be created.')
@@ -67,7 +68,8 @@ class PipeArgs(object):
         parser.add('--reqnum',help='Part of processing unique identifier. Tied to JIRA ticket \
                              number')
         parser.add('--decade', action='store_true', help='Uses the DECADE subsection of WCL')
-    
+        parser.add('--assign_reqnum', action='store_true', help='Ignore jira and create reqnum based on JIRA_RECORDS table')
+ 
         # EUPS arguments
         parser.add('--eups_stack',action='append',nargs='+', required=True,help='EUPS production stack, \
                                                                                e.g., finalcut Y2A1+4')

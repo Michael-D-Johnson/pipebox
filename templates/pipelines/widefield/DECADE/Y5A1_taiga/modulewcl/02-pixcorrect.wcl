@@ -1,0 +1,114 @@
+<module>
+    <pixcorrect>
+        wrappername = genwrap.py
+        wrapperloop = ccdnum,band
+        modnamepat = ${modnamepat_ccdnumband}
+        loopobj = file.xtalked_sci
+
+        <file>
+            <xtalked_sci>   
+                depends crosstalk-sci.file.red_xtalked
+                dirpat = se
+                rundir = red/xtalk
+                match = ccdnum,band
+            </xtalked_sci>
+            <biascor>
+                filetype = cal_biascor
+                filename = ${camsym}_n${calnite}_c${ccdnum:2}_r${calreq}p${calatt:2}_biascor.fits
+                dirpat = se
+                rundir = biascor
+            </biascor>
+            <norm_dflatcor>
+                band = ${band}
+                #filetype = cal_norm_dflatcor
+                filetype = cal_dflatcor
+                filename = ${camsym}_n${calnite}_${band}_c${ccdnum:2}_r${calreq}p${calatt:2}_norm-dflatcor.fits
+                dirpat = se
+                rundir = norm-dflatcor
+            </norm_dflatcor>
+            <bpm>
+                filetype = cal_bpm
+
+                # what goes into list?
+                query_table = calibration
+                query_fields = filename, filetype,ccdnum
+                output_fields = ccdnum,filename
+                match = ccdnum
+                # description of list for wrapper
+                columns = bpm.fullname
+
+                # where to put the file
+                dirpat = se
+                rundir = bpm/${bpmnite}-r${bpmreq}/p${bpmatt:2}
+                filename = %${bpmnite}_c${ccdnum:2}_r${bpmreq}p${bpmatt:2}_bpm.fits
+            </bpm>
+            <bf>
+                filetype = cal_bf
+                dirpat = se
+                rundir = bf
+                filename = ${bffile} 
+            </bf>
+            <lintable>
+                filetype = cal_lintable
+                dirpat = se
+                rundir = lintable
+                filename = ${lintablefile}
+            </lintable>
+            <red_pixcor>
+                # what metadata to get
+                filetype = red_pixcor
+
+                # how to name the file
+                filepat = ccdnum_band
+                flabel = pixcor
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                ops_enddir = red/pixcor
+                rundir = red/pixcor
+                savefiles = false
+                compress_files = true
+            </red_pixcor>
+            <pixcor_mini_red>
+                # what metadata to get
+                filetype = pixcor_mini_red
+
+                # how to name the file
+                filepat = ccdnum_band
+                flabel = pixcor-mini-red
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                ops_enddir = mini
+                rundir = mini
+
+                # whether to bring file home
+                savefiles = false
+            </pixcor_mini_red>
+        </file>
+        <exec_1>
+            execname = pixcorrect_im
+            used = file.xtalked_sci, file.biascor, file.lintable, file.norm_dflatcor,file.bpm,file.bf
+            was_generated_by = file.red_pixcor
+            ancestry = file.xtalked_sci:file.red_pixcor, file.biascor:file.red_pixcor, file.lintable:file.red_pixcor,file.norm_dflatcor:file.red_pixcor,file.bpm:file.red_pixcor
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                in = ${file.xtalked_sci.fullname}
+                bias = ${file.biascor.fullname}
+                flat = ${file.norm_dflatcor.fullname}
+                lincor = ${file.lintable.fullname}
+                bpm = ${file.bpm.fullname}
+                bf = ${file.bf.fullname}
+                resaturate = _flag
+                addweight = _flag
+                gain = _flag
+                fixcols = _flag
+                v = _flag
+                out = ${file.red_pixcor.fullname} 
+                lightbulb = _flag
+            </cmdline>
+        </exec_1>
+    </pixcorrect>
+</module>

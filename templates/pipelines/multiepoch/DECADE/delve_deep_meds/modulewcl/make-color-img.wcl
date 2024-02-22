@@ -1,0 +1,85 @@
+<module>
+    <make-color-img>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        <exec_1>
+            execname = stiff
+            cmd_hyphen = allsingle
+            used = file.coadd_red, file.coadd_green, file.coadd_blue,file.stiff_config
+            was_generated_by = file.coadd_tiff
+            ancestry = file.coadd_red:file.coadd_tiff, file.coadd_green:file.coadd_tiff, file.coadd_blue:file.coadd_tiff
+            <cmdline>
+                # space separated fullnames name1.fits[0] name2.fits[0] name3.fits[0] ?????
+                _01_coadd_r = ${file.coadd_red.fullname}
+                _02_coadd_g = ${file.coadd_green.fullname}
+                _03_coadd_b = ${file.coadd_blue.fullname}
+                c = ${file.stiff_config.fullname}   # default.stiff
+                OUTFILE_NAME = ${file.coadd_tiff.fullname}  # coadd/DES0002+0001.tiff
+                # do we need quotes here?
+                DESCRIPTION = 'Pseudo Color of coadded image for DES tile ${tilename} (${color_r_band}, ${color_g_band}, ${color_b_band})'
+                NTHREADS = ${nthreads}
+            </cmdline>
+        </exec_1>
+        <file>
+            ### inputs
+            <stiff_config>
+                # what input file is named
+                filename = ${stiff_config_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </stiff_config>
+            <coadd_red>
+                # how to name input file
+                band = ${color_r_band}
+                filepat = tile_band_nolabel
+                fsuffix = fits
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_red>
+            <coadd_green>
+                # how to name input file
+                band = ${color_g_band}
+                filepat = tile_band_nolabel
+                fsuffix = fits
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_green>
+            <coadd_blue>
+                # how to name input file
+                band = ${color_b_band}
+                filepat = tile_band_nolabel
+                fsuffix = fits
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_blue>
+
+            ### outputs
+            <coadd_tiff>   # graphical image
+
+                # what metadata to save
+                filetype = coadd_tiff
+                # how to name output file
+                filepat = tile_generic
+                flabel = ${color_r_band}${color_g_band}${color_b_band}
+                fsuffix = tiff
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = qa
+                ops_enddir = qa
+            </coadd_tiff>
+        </file>
+    </make-color-img>
+</module>

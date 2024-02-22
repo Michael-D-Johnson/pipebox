@@ -1,0 +1,56 @@
+<module>
+    <skycombine-dflatcor>
+        <exec_1>
+            ancestry = list.mini-dflat-list.mini_dflatcor:file.binned_fp
+            cmd_hyphen = alldouble
+            <cmdline>
+                ccdnums = ${ccdnum}
+                miniskylist = ${list.mini-dflat-list.fullname}
+                outfilename = ${file.binned_fp.fullname}
+            </cmdline>
+            execname = sky_combine
+            used = list.mini-dflat-list.mini_dflatcor
+            was_generated_by = file.binned_fp
+        </exec_1>
+        <file>
+            <binned_fp>
+                dirpat = precal
+                filepat = nite_band
+                filetype = dflatcor_binned_fp
+                flabel = dflat-binned-fp
+                fsuffix = fits
+                ops_enddir = binned-fp
+                rundir = binned-fp
+                savefiles = True
+            </binned_fp>
+            <mini_dflatcor>
+                listonly = True
+                # location of files in list
+                dirpat = precal
+                rundir = mini-dflatcor
+            </mini_dflatcor>
+        </file>
+        <list>
+            <mini-dflat-list>
+                depends skycompress-dflatcor.file.mini_dflatcor
+                divide_by = band
+
+                # name and location of list file
+                filepat = nite_band
+                filetype = mini_dflatcor
+                flabel = dflatcor
+                fsuffix = list
+
+                dirpat = precal
+                ops_enddir = list
+                rundir = list
+                
+                columns=mini_dflatcor.fullname
+            </mini-dflat-list>
+        </list>
+        loopobj = list.mini-dflat-list
+        modnamepat = ${modnamepat_nite_band}
+        wrapperloop = band
+        wrappername = genwrap.py
+    </skycombine-dflatcor>
+</module>

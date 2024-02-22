@@ -1,0 +1,13 @@
+<module>
+    <query-for-pizza-cutter>
+        modnamepat = ${modnamepat_tile_generic}
+        noop = True    # only run query so can use info in other modules
+        <list>
+            <medsfiles>
+                exec = query_coadd_for_meds.py
+                args = -A ${coadd_id} -v 2 --outfile ${qoutfile} --zeropoint None --bkgimg --segmap --psfmodel --usepiff --pifftag Y6A1_PIFF --bandlist ${bands} --me_proctag Y6A2_COADD --imglist ${tilename}_r${reqnum}p${attnum}_img.list --ima_list ${tilename}_r${reqnum}p${attnum}_ima.list --head_list ${tilename}_r${reqnum}p${attnum}_head.list --bkg_list ${tilename}_r${reqnum}p${attnum}_bkg.list --seg_list ${tilename}_r${reqnum}p${attnum}_seg.list --psf_list ${tilename}_r${reqnum}p${attnum}_psf.list
+                columns = red.mag_zero
+            </medsfiles>
+        </list>
+    </query-for-pizza-cutter>
+</module>

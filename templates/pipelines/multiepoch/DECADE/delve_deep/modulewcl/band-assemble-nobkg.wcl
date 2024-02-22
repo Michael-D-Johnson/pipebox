@@ -1,0 +1,82 @@
+<module>
+    <band-assemble-nobkg>
+        modnamepat = ${modnamepat_tile_band}
+        wrappername = genwrap.py
+        wrapperloop = band
+        loopobj = file.coadd_sci_nobkg
+        max_fwthreads = 3
+        <exec_1>
+            execname = coadd_assemble
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                sci_file = ${file.coadd_sci_nobkg.fullname}
+                wgt_file = ${file.coadd_wgt_nobkg.fullname}
+                msk_file = ${file.coadd_msk_nobkg.fullname}
+                outname = ${file.coadd_nobkg.fullname}
+                xblock = ${assemble_xblock}
+                yblock = ${assemble_yblock}
+                maxcols = ${assemble_maxcols}
+                mincols = ${assemble_mincols}
+                no-keep_sci_zeros = _flag
+                magzero = ${mag_zero}
+                tilename = ${tilename}
+                tileid = ${tileid}
+                interp_image = MSK
+                ydilate = ${assemble_ydilate}
+            </cmdline>
+            used = file.coadd_sci_nobkg, file.coadd_wgt_nobkg, file.coadd_msk_nobkg
+            was_generated_by = file.coadd_nobkg
+            ancestry = file.coadd_sci_nobkg:file.coadd_nobkg
+        </exec_1>
+        <file>
+            ### inputs
+            <coadd_sci_nobkg>
+                # how to get file data
+                depends band-swarp-wgt-nobkg.file.coadd_sci_nobkg
+                match = band
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_sci_nobkg>
+            <coadd_wgt_nobkg>
+                # how to get file data
+                depends band-swarp-wgt-nobkg.file.coadd_wgt_nobkg
+                match = band
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_wgt_nobkg>
+            <coadd_msk_nobkg>
+                # how to get file data
+                depends band-swarp-msk-nobkg.file.coadd_msk_nobkg
+                match = band
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_msk_nobkg>
+            ### outputs
+            <coadd_nobkg>
+                # what metadata to save
+                filetype = coadd_nobkg
+
+                # how to name output file
+                filepat = tile_band
+                flabel = nobkg
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = true
+                #compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = coadd
+                ops_enddir = coadd
+            </coadd_nobkg>
+        </file>
+    </band-assemble-nobkg>
+</module>

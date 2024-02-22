@@ -1,0 +1,43 @@
+<module>
+    <nir-rehab>
+        wrappername = genwrap.py
+        modnamepat=${modnamepat_expband}
+        <file>
+            <file1>
+	        filetype = nir_paw
+                filename = ${nirfilename}_st.fit
+                dirpat = nir_paw
+                rundir = nir_paw
+            </file1>
+            <file2>
+                filetype = nir_paw_conf
+                filename = ${nirfilename}_st_conf.fit
+                dirpat = nir_paw_conf
+                rundir = nir_paw_conf
+            </file2>
+            <nir_output>
+                filetype = red_pixcor
+                filepat = ccdnum_band
+        		flabel = pixcor
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/nir_rehab
+                rundir = red/nir_rehab
+                savefiles = true
+            </nir_output>
+        </file>
+        <exec_1>
+            execname = nir_rehab
+            used = file.file1, file.file2
+            was_generated_by = file.nir_output
+            ancestry = file.file1:file.nir_output, file.file2:file.nir_output
+            <cmdline>
+                -nir_paw_image = ${file.file1.fullname}
+                -nir_paw_conf = ${file.file2.fullname} 
+                -output_template = red/nir_rehab/${camsym}${expnum:8}_${band}_c%%02d_r${reqnum}p${attnum:2}_pixcor.fits
+		        #replace = ${file.hupdate.fullname}
+                v = 2
+            </cmdline>
+        </exec_1>
+    </nir-rehab>
+</module>

@@ -1,0 +1,90 @@
+<module>
+    <skysub>
+        wrappername = genwrap.py
+        wrapperloop = ccdnum,band
+        modnamepat = ${modnamepat_ccdnumband}
+
+        <file>
+             <red_bleedmasked>
+                filetype = red_mkbleedmask
+                filepat = ccdnum_band
+                flabel = bleedmasked
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/bleedmask
+                rundir = red/bleedmask
+                savefiles = false
+            </red_bleedmasked>
+            <skyfit_binned_fp>
+                # what metadata to get
+                filetype = skyfit_binned_fp
+
+                # how to name the file
+                filepat = exposure
+                flabel = skyfit-binned-fp
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                ops_enddir = binned-fp
+                rundir = binned-fp
+            </skyfit_binned_fp>
+            <red_skysub>
+                filetype = red_skysub
+                filepat = ccdnum_band
+                flabel = skysub
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red
+                rundir = red
+                savefiles = false
+            </red_skysub>
+            <cal_norm_dflatcor>
+                # metadata info
+                #filetype = cal_norm_dflatcor
+                filetype = cal_dflatcor
+                filename = ${camsym}_n${calnite}_${band}_c${ccdnum:2}_r${calreq}p${calatt:2}_norm-dflatcor.fits
+
+                # where to store file
+                dirpat = precal
+                ops_enddir = norm-dflatcor
+                rundir = norm-dflatcor
+            </cal_norm_dflatcor>
+            <cal_skypca_tmpl>
+                filetype = cal_skypca_tmpl
+
+                # how to name the file
+                
+                filename = %${skypcarange}_${band}_c${ccdnum:2}_r${skypcareq}p${skypcaatt:2}_skypca-tmpl.fits
+                # what goes into list?
+                query_table = calibration
+                query_fields = filename, filetype,band,ccdnum
+                output_fields = ccdnum,band,filename
+                match = ccdnum,band
+                # description of list for wrapper
+                columns = cal_skypca_tmpl.fullname
+
+                # where to put the file
+                dirpat = se
+                ops_enddir = tmpl
+                rundir = tmpl
+            </cal_skypca_tmpl>
+        </file>
+        <exec_1>
+            execname = sky_subtract
+            cmd_hyphen = alldouble
+            used = file.red_bleedmasked,file.skyfit_binned_fp,file.cal_skypca_tmpl,file.cal_norm_dflatcor
+            was_generated_by = file.red_skysub
+            ancestry = file.red_bleedmasked:file.red_skysub
+            <cmdline>
+                i = ${file.red_bleedmasked.fullname}
+                o = ${file.red_skysub.fullname}
+                fitfilename = ${file.skyfit_binned_fp.fullname}
+                pcfilename = ${file.cal_skypca_tmpl.fullname}
+                domefilename = ${file.cal_norm_dflatcor.fullname}
+                weight = sky
+                null_mask = EDGE
+            </cmdline>
+        </exec_1>
+    </skysub>
+</module>

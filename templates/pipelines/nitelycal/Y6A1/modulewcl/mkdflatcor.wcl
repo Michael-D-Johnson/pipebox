@@ -1,0 +1,55 @@
+<module>
+    <mkdflatcor>
+        <exec_1>
+            ancestry = list.inlist.pixcor:file.dflatcor
+            <cmdline>
+                _01_inlist = ${list.inlist.fullname}
+                _02_dflatcor = ${file.dflatcor.fullname}
+                avsigclip = 5.0
+                halfS7 = _flag
+                variancetype = WEIGHT
+                verbose = 3
+            </cmdline>
+            execname = mkflatcor
+            used = list.inlist.pixcor
+            was_generated_by = file.dflatcor
+        </exec_1>
+        <file>
+            <dflatcor>
+                dirpat = precal
+                filepat = nite_ccdnum_band
+                filetype = cal_dflatcor
+                flabel = dflatcor
+                fsuffix = fits
+                ops_enddir = dflatcor
+                rundir = dflatcor
+                savefiles = True
+            </dflatcor>
+            <pixcor>
+                dirpat = precal
+                listonly = True
+                rundir = pixcor-dflat
+            </pixcor>
+        </file>
+        <list>
+            <inlist>
+                columns = pixcor.fullname
+                dirpat = precal
+                divide_by = ccdnum,band
+                filepat = nite_ccdnum_band
+                filetype = pixcor_dflat
+                flabel = pixcor-dflat
+                fsuffix = list
+                ops_enddir = dflatcor
+                output_fields = filename, ccdnum, band
+                query_fields = filetype,pfw_attempt_id
+                query_table = calibration
+                rundir = dflatcor
+            </inlist>
+        </list>
+        loopobj = list.inlist
+        modnamepat = ${modnamepat_nite_ccdnum_band}
+        wrapperloop = ccdnum, band
+        wrappername = genwrap.py
+    </mkdflatcor>
+</module>

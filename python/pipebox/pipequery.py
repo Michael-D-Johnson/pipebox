@@ -10,13 +10,41 @@ class PipeQuery(object):
         dbh = DesDbi(None,section, retry = True)
         cur = dbh.cursor()
         self.section = section
+        if self.section == 'db-decade':
+            self.schema = 'DECADE'
+        else:
+            self.schema = 'PROD'
         self.dbh = dbh
-        self.cur = cur 
+        self.cur = cur
+
+
+    def get_tickets(self):
+        ticket_query = "select issue_key, summary, parent_issue, reporter from jira_records"
+
+        #add some where statement?
+        self.cur.execute(ticket_query)
+        tickets = pd.DataFrame(self.cur.fetchall(), 
+                            columns=['issue_key', 'summary', 'parent_issue', 'reporter'])
+        return tickets
     
-    def find_epoch(self,exposure):
+    def add_ticket(self, dict, add_parent=False):
+        insert_query = "insert into jira_records (issue_key, summary, parent_issue, reporter) "
+        if not add_parent:
+            insert_query += f"values ('{dict['ticket']}', '{dict['summary']}', '{dict['parent']}', '{dict['jira_user']}')"
+        else:
+            insert_query += f"values ('Null', '{dict['parent_summary']}', '{dict['parent']}', '{dict['jira_user']}')"
+        self.cur.execute(insert_query)
+        self.dbh.commit()
+        
+
+    def find_epoch(self,exposure, decade=False):
         """ Return correct epoch name for exposure in order to use
             appropriate calibrations file"""
-        epoch_query = "select name,minexpnum,maxexpnum from ops_epoch"
+        
+        if decade: 
+             epoch_query = "select name,minexpnum,maxexpnum from DECADE.ops_epoch"
+        else:
+             epoch_query = "select name,minexpnum,maxexpnum from PROD.ops_epoch"
         self.cur.execute(epoch_query)
         epochs = self.cur.fetchall()
 
@@ -38,23 +66,28 @@ class PipeQuery(object):
             name = [name for name,diff in diff_list if diff == min_of_min_diff][0]
             return name
 
-    def get_cals_from_epoch(self, epoch,band = None,campaign= None):
+    def get_cals_from_epoch(self, epoch, band=None, campaign=None, decade=False):
         """ Query to return the unitname,reqnum,attnum of epoch-based calibrations."""
-        count_for_campaign = "select count(*) from ops_epoch_inputs_per_band where name='{epoch}' \
+        count_for_campaign = "select count(*) from PROD.ops_epoch_inputs_per_band where name='{epoch}' \
                               and campaign='{c}'".format(epoch=epoch,c=campaign)
         self.cur.execute(count_for_campaign)
         count = self.cur.fetchall()[0][0]
+        if decade:
+            tname = 'DECADE.ops_epoch_inputs_per_band'
+        else:
+            tname = 'PROD.ops_epoch_inputs_per_band' 
+       
         if int(count) == 0:
-            campaign_query = "select max(campaign) from ops_epoch_inputs_per_band where name='{epoch}'".format(epoch=epoch)
+            campaign_query = "select max(campaign) from {tname} where name='{epoch}'".format(epoch=epoch, tname=tname)
             self.cur.execute(campaign_query)
             campaign = self.cur.fetchall()[0][0]
-        query = "select * from ops_epoch_inputs_per_band where name='{epoch}'  \
-                 and campaign = '{c}' and (band = '{band}' or band is null)".format(epoch=epoch,c=campaign,band = band)
+        query = "select * from {tname} where name='{epoch}'  \
+                 and campaign = '{c}' and (band = '{band}' or band is null)".format(epoch=epoch, c=campaign, band=band, tname=tname)
         self.cur.execute(query)
         data = pd.DataFrame(self.cur.fetchall(),
                columns=['name','filetype','reqnum','unitname','attnum','band','campaign','filename',
                         'filepat','ccdnum'])
-                
+
         cals = data
         cals = cals.append(data[data.filetype=='cal_lintable'])
         cals = cals.append(data[(data.filetype=='config')])
@@ -67,7 +100,7 @@ class PipeQuery(object):
         taglist = tag.split(',')
         tag_list_of_dict = []
         for t in taglist:
-            expnum_query = "select distinct expnum from exposuretag where tag='%s'" % t
+            expnum_query = "select distinct expnum from PROD.exposuretag where tag='%s'" % t
             self.cur.execute(expnum_query)
             results = self.cur.fetchall()
             expnum_list = [exp[0] for exp in results]
@@ -101,16 +134,30 @@ class PipeQuery(object):
             for i in range(1,n+1):
                 date = now - timedelta(i)
                 nites.append(date.strftime('%Y%m%d'))
-            print "%s: Inserting into AUTO_QUEUE." % now
-        base_query = "select distinct expnum,propid from exposure where obstype in ('object','standard') and "
-        base_query+= "object not like '%%pointing%%' and object not like '%%focus%%' and " 
-        base_query+= "object not like '%%donut%%' and object not like '%%test%%' and "
-        base_query+= "object not like '%%junk%%' and nite in (%s)" % ','.join(nites)
-        if propid:
-            base_query = base_query + " and propid in (%s)" % ','.join("'{0}'".format(k) for k in propid)
+            print("%s: Inserting into AUTO_QUEUE." % now)
+        query_db = True
+        iter = 0
+        results=[]
 
-        self.cur.execute(base_query)
-        results = [(row[0],row[1]) for row in self.cur.fetchall()]
+        while query_db:
+            nite_list = nites[iter*500:(iter+1)*500]
+            base_query = "select distinct expnum,propid from exposure where obstype in ('object','standard') and "
+            base_query+= "object not like '%%pointing%%' and object not like '%%focus%%' and " 
+            base_query+= "object not like '%%donut%%' and object not like '%%test%%' and "
+            base_query+= "object not like '%%junk%%' and nite in (%s) " % ','.join(nite_list)
+            #base_query+= "offset %i rows  fetch next 1000 rows only" % (iter*1000) 
+            if propid:
+                base_query = base_query + " and propid in (%s)" % ','.join("'{0}'".format(k) for k in propid)
+
+            self.cur.execute(base_query)
+            temp_results = [(row[0],row[1]) for row in self.cur.fetchall()]
+            for item in temp_results:
+                 results.append(item)
+            if len(nite_list)<500:
+                query_db=False
+            iter=iter+1
+
+            
         if results:
             inserts = []
             for (expnum,propid) in results:
@@ -121,12 +168,12 @@ class PipeQuery(object):
                 except:
                     pass
             self.dbh.commit()
-            print '%s exposures inserted.' % len(inserts)
+            print('%s exposures inserted.' % len(inserts))
         else:
-            print 'No new exposures to insert.'
+            print('No new exposures to insert.')
 
     def update_auto_queue(self,n_failed=3,project='OPS'):
-        print '%s: Updating AUTO_QUEUE.' % datetime.now()
+        print('%s: Updating AUTO_QUEUE.' % datetime.now())
         query_db = True
         iter = 0
         success_exposures = []
@@ -136,12 +183,11 @@ class PipeQuery(object):
             query = "select distinct expnum, processed from ops_auto_queue where processed!=1 offset %i rows  fetch next 1000 rows only" % (iter*1000)
             self.cur.execute(query)
             ops_auto = pd.DataFrame(self.cur.fetchall(), columns=['expnum','processed'])
-            unitnames = ['D00'+ str(e) for e in ops_auto['expnum'].values]
-            
+            unitnames = ['D'+ str(e).zfill(8) for e in ops_auto['expnum'].values]
             if len(unitnames) < 1000:
                 query_db = False
     
-            submitted = "select distinct unitname,attnum,status from pfw_attempt a, task t,pfw_request r where r.reqnum=a.reqnum and t.id=a.task_id and r.project='%s' and unitname in ('%s')" % (project,"','".join(unitnames))
+            submitted = "select distinct unitname,attnum,status from pfw_attempt a, task t, pfw_request r where r.reqnum=a.reqnum and t.id=a.task_id and r.project in ('DEC','%s') and unitname in ('%s')" % (project,"','".join(unitnames))
             self.cur.execute(submitted)
             failed_query = self.cur.fetchall()
         
@@ -154,7 +200,7 @@ class PipeQuery(object):
                 df = df.fillna(-99)
 
                 for u in df['unitname'].unique():
-                    expnum = u.split('D00')[1]
+                    expnum = str(int(u.split('D')[1]))
                     statuses = list(df[(df.unitname == u)]['status'].values)
                     failed_atts = [i for i in statuses if i >=1]
                     if 0 in statuses:
@@ -162,7 +208,7 @@ class PipeQuery(object):
                     if 0 not in statuses and -99 not in statuses and len(failed_atts) >= n_failed and any(ops_auto[ops_auto['expnum']==int(expnum)]['processed'] !=2):
                         fail_exposures.append(expnum)
             iter += 1       
- 
+        success_exposures=success_exposures[:1000]
         if success_exposures:
             update_query = "update ops_auto_queue set processed=1,updated=CURRENT_TIMESTAMP where expnum in ({expnums})".format(expnums=','.join(success_exposures))
             self.cur.execute(update_query)
@@ -172,9 +218,9 @@ class PipeQuery(object):
             self.cur.execute(update_query)
             self.dbh.commit()
         if not success_exposures and not fail_exposures:
-            print 'No new exposures to update.'
+            print('No new exposures to update.')
         else:
-            print 'Updated %i exposures as processed: success = %i, fail = %i' % (len(success_exposures)+len(fail_exposures), len(success_exposures),len(fail_exposures))
+            print('Updated %i exposures as processed: success = %i, fail = %i' % (len(success_exposures)+len(fail_exposures), len(success_exposures),len(fail_exposures)))
 
 
 class SuperNova(PipeQuery):
@@ -195,7 +241,7 @@ class SuperNova(PipeQuery):
         for index,row in df.iterrows():
             expnums=self.get_expnums(row['nite'],row['field'],row['band'])
             df.loc[index,'expnums'] = expnums
-            print expnums
+            print(expnums)
             firstexp = expnums.split(',')[0]
             df.loc[index,'firstexp'] = firstexp
             df.loc[index,'ccdnum'] = '1,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,62'
@@ -211,7 +257,7 @@ class SuperNova(PipeQuery):
     def check_submitted(self,unitname,reqnum):
         """ Queries database to find number of attempts submitted for
             given exposure. Returns count"""
-        was_submitted = "select count(*) from pfw_attempt where unitname= '%s' and reqnum = '%s'" % (unitname,reqnum)
+        was_submitted = "select count(*) from PROD.pfw_attempt where unitname= '%s' and reqnum = '%s'" % (unitname,reqnum)
         self.cur.execute(was_submitted)
         submitted_or_not = self.cur.fetchone()[0]
         return submitted_or_not       
@@ -219,7 +265,7 @@ class SuperNova(PipeQuery):
 # Edited from widefield
     def get_max_nite(self):
         """Returns expnum,nite of max(expnum) in the exposure table"""
-        query = "select max(nite) from manifest_exposure where exptime > 30"
+        query = "select max(nite) from PROD.manifest_exposure where exptime > 30"
         self.cur.execute(query)
         return self.cur.fetchone()[0]
 
@@ -227,8 +273,8 @@ class SuperNova(PipeQuery):
     def get_failed_triplets(self,nitelist,resubmit_max):
         """ Queries database to find number of failed attempts without success.
             Returns expnums for failed, non-null, nonzero attempts."""
-        submitted = "select distinct s.nite, s.field, s.band, p.unitname, p.attnum, t.status from pfw_attempt p, task t, snsubmit s where t.id=p.task_id and s.nite in (%s) and p.task_id = s.task_id  and p.unitname like 'D_SN-%%'" % (','.join(map(str,nitelist)))
-        print submitted
+        submitted = "select distinct s.nite, s.field, s.band, p.unitname, p.attnum, t.status from PROD.pfw_attempt p, PROD.task t, PROD.snsubmit s where t.id=p.task_id and s.nite in (%s) and p.task_id = s.task_id  and p.unitname like 'D_SN-%%'" % (','.join(map(str,nitelist)))
+        print(submitted)
         self.cur.execute(submitted)
         failed_query = self.cur.fetchall()
         df = pd.DataFrame(failed_query,columns=['nite','field','band','unitname','attnum','status'])
@@ -238,22 +284,22 @@ class SuperNova(PipeQuery):
         for u in df['unitname'].unique():
             nattempts = df[(df.unitname==u)].count()[0]
             count = df[(df.unitname==u) & (df.status==0)].count()[0]
-            print str(u)+' has '+str(count)+' good processings. '+str(nattempts)+' total processings. Max is '+str(resubmit_max)
+            print(str(u)+' has '+str(count)+' good processings. '+str(nattempts)+' total processings. Max is '+str(resubmit_max))
             if (count >= 1) or (nattempts >= int(resubmit_max)):
                 passed_unitnames.append(u)
         try:
             failed_list = df[(~df.unitname.isin(passed_unitnames)) & (~df.status.isin([0,-99]))][['nite','field','band']]
         except:
-            print 'No new failed exposures found!'
+            print('No new failed exposures found!')
             exit()
         try: 
-            print failed_list
+            print(failed_list)
             resubmit_list = (failed_list.drop_duplicates(subset=['nite','field','band'])).values
-            print resubmit_list
+            print(resubmit_list)
         except:
-            print 'No new failed exposures found!'
+            print('No new failed exposures found!')
             exit()
- #       print 'get_failed_triplets disabled'
+ #       print('get_failed_triplets disabled')
  #       exit()
         return resubmit_list
 
@@ -262,10 +308,10 @@ class SuperNova(PipeQuery):
         """ Get exposure numbers and band for a SN nite field band triplet"""
         if not nite:
             raise Exception("Must specify nite!")
-        print "selecting exposures to submit..."
-        query = "select distinct nite, field, band from manifest_exposure where exptime > 30 \
+        print("selecting exposures to submit...")
+        query = "select distinct nite, field, band from PROD.manifest_exposure where exptime > 30 \
                 and nite in (%s) " % (','.join(nite))
-        print query
+        print(query)
         self.cur.execute(query)
 #        triplets = np.ravel(np.array(self.cur.fetchall()))
 #        return string.join(map(str,triplets),',').reshape[-1:3]
@@ -284,8 +330,8 @@ class SuperNova(PipeQuery):
             raise Exception("Must specify field!")
         if not band:
             raise Exception("Must specify nite!")
-        print "selecting exposures to submit..."
-        query = "select distinct expnum from manifest_exposure where exptime > 30  and nite = '%s' and field = 'SN-%s' and band = '%s' " % (str(nite), field[-2:], band)
+        print("selecting exposures to submit...")
+        query = "select distinct expnum from PROD.manifest_exposure where exptime > 30  and nite = '%s' and field = 'SN-%s' and band = '%s' " % (str(nite), field[-2:], band)
         self.cur.execute(query)
         exps = np.ravel(np.array(self.cur.fetchall()))
         return string.join(map(str,exps),',')
@@ -314,7 +360,7 @@ class SuperNova(PipeQuery):
         if days > threshold:
             if override is True:
                 if tag is None:
-                    print "Must specify tag if override is True!"
+                    print("Must specify tag if override is True!")
                     exit(0)
                 else:
                     max_tagged = "select distinct unitname,reqnum, attnum from ops_proctag where tag = '%s' and unitname in (select max(unitname) from ops_proctag where tag = '%s')" % (tag,tag)
@@ -323,11 +369,11 @@ class SuperNova(PipeQuery):
                     try:
                         precal_unitname,precal_reqnum,precal_attnum = last_results[0][0],last_results[0][1],last_results[0][2]
                     except:
-                        print "No tagged precals found. Please check tag or database section used..."
+                        print("No tagged precals found. Please check tag or database section used...")
                         exit(0)
             elif override is False or override is None:
                 if results is None:
-                    print "No precals found. Please manually select input precal..."
+                    print("No precals found. Please manually select input precal...")
                     exit(0)
         precal_nite = precal_unitname
         precal_run = 'r%sp0%s' % (precal_reqnum,precal_attnum)
@@ -338,7 +384,7 @@ class MultiEpoch(PipeQuery):
 
     def check_proctag(self,tag):
         """ Check to see if specified processing tag exists in PROCTAG table"""
-        query = "select count(*) from proctag where tag = '{tag}'".format(tag=tag)
+        query = "select count(*) from PROD.proctag where tag = '{tag}'".format(tag=tag)
         self.cur.execute(query)
         count = self.cur.fetchone()[0]
         return count
@@ -368,16 +414,16 @@ class MultiEpoch(PipeQuery):
         RA = [float(r) for r in RA[0]]
         Dec = [float(d) for d in Dec[0]]
         if RA[0]==min(RA):
-            query = "select tilename from coadd where RA_CENT >{minRA} and RA_CENT <{maxRA} and DEC_CENT >{minDec} and DEC_CENT <{maxDec}".format(minRA=RA[0], maxRA=RA[1], minDec=min(Dec), maxDec=max(Dec))
+            query = "select tilename from PROD.coadd where RA_CENT >{minRA} and RA_CENT <{maxRA} and DEC_CENT >{minDec} and DEC_CENT <{maxDec}".format(minRA=RA[0], maxRA=RA[1], minDec=min(Dec), maxDec=max(Dec))
         else:
-            query = "select tilename from coadd where (RA_CENT>{minRA} or RA_CENT<{maxRA}) and DEC_CENT>{minDec} and DEC_CENT<{maxDec}".format(minRA=RA[0], maxRA=RA[1], minDec=min(Dec), maxDec=max(Dec))
+            query = "select tilename from PROD.coadd where (RA_CENT>{minRA} or RA_CENT<{maxRA}) and DEC_CENT>{minDec} and DEC_CENT<{maxDec}".format(minRA=RA[0], maxRA=RA[1], minDec=min(Dec), maxDec=max(Dec))
         self.cur.execute(query)
         return self.cur.fetchall() 
 
     def get_failed_tiles(self, reqnum,resubmit_max):
         """ Queries database to find number of failed attempts without success.
             Returns expnums for failed, non-null, nonzero attempts."""
-        submitted = "select distinct unitname,attnum,status from pfw_attempt p, task t where t.id=p.task_id and reqnum = '%s'" % (reqnum)
+        submitted = "select distinct unitname,attnum,status from PROD.pfw_attempt p, PROD.task t where t.id=p.task_id and reqnum = '%s'" % (reqnum)
         self.cur.execute(submitted)
         failed_query = self.cur.fetchall()
         df = pd.DataFrame(failed_query,columns=['unitname','attnum','status'])
@@ -406,19 +452,19 @@ class WideField(PipeQuery):
   
     def count_by_obstype(self,niteslist):
         """  return count per obstype, band """
-        count_query="select obstype,band,count(expnum) from exposure where nite in ({nites}) and obstype not in ('dome flat', 'zero','dark') group by obstype,band".format(nites=','.join(niteslist))
+        count_query="select obstype,band,count(expnum) from PROD.exposure where nite in ({nites}) and obstype not in ('dome flat', 'zero','dark') group by obstype,band".format(nites=','.join(niteslist))
         self.cur.execute(count_query)
         count_info = self.cur.fetchall()
-        print " Obstype         Band      Count"
+        print(" Obstype         Band      Count")
         for row in count_info:
-            print "%09s  %09s  %09s" % (row[0], row[1], row[2])
+            print("%09s  %09s  %09s" % (row[0], row[1], row[2]))
     def get_expnums_from_radec(self, RA, Dec,radius=None):
         RA = [float(r) for r in RA[0]]
         Dec = [float(d) for d in Dec[0]]
         if RA[0]==min(RA):
-            query = "select expnum from exposure where radeg>{minRA} and radeg<{maxRA} and decdeg>{minDec} and decdeg<{maxDec}".format(minRA=RA[0], maxRA=RA[1], minDec=min(Dec), maxDec=max(Dec))
+            query = "select expnum from PROD.exposure where radeg>{minRA} and radeg<{maxRA} and decdeg>{minDec} and decdeg<{maxDec}".format(minRA=RA[0], maxRA=RA[1], minDec=min(Dec), maxDec=max(Dec))
         else:
-            query = "select expnum from exposure where (radeg>{minRA} or radeg<{maxRA}) and decdeg>{minDec} and decdeg<{maxDec}".format(minRA=RA[0], maxRA=RA[1], minDec=min(Dec), maxDec=max(Dec))
+            query = "select expnum from PROD.exposure where (radeg>{minRA} or radeg<{maxRA}) and decdeg>{minDec} and decdeg<{maxDec}".format(minRA=RA[0], maxRA=RA[1], minDec=min(Dec), maxDec=max(Dec))
         self.cur.execute(query)
         return self.cur.fetchall()
 
@@ -431,24 +477,32 @@ class WideField(PipeQuery):
             results = self.cur.fetchall()[0]
             yield results
 
-    def update_df(self,df):
+    def update_df(self,args):
         """ Takes a pandas dataframe and for each exposure add column:value
             band and nite. Returns dataframe"""
+        df = args.dataframe
         for index,row in df.iterrows():
-            expnum_info = "select distinct expnum, band, nite, obstype from exposure where expnum='%s'" % row['expnum']
+            if args.campaign == 'NIR':
+                print("Checking the NIR_PAW table")
+                expnum_info = "select distinct expnum, band, nite, obstype,filename from nir_paw where obstype='object' and expnum='%s'" % row['expnum']
+            else:
+                expnum_info = "select distinct expnum, band, nite, obstype,filename from exposure where expnum='%s'" % row['expnum']
             self.cur.execute(expnum_info)
-            expnum,band,nite,obstype = self.cur.fetchall()[0]
+            expnum,band,nite,obstype,filename = self.cur.fetchall()[0]
+            
             try:
                 df.insert(len(df.columns),'nite', None)
                 df.insert(len(df.columns),'band', None)
                 df.insert(len(df.columns),'unitname',None)
                 df.insert(len(df.columns),'obstype',None)
+                df.insert(len(df.columns),'filename',None)
             except:
                 pass
             df.loc[index,'nite'] = nite
             df.loc[index,'band'] = band
-            df.loc[index,'unitname'] = 'D00' + str(expnum)
+            df.loc[index,'unitname'] = 'D' + str(expnum).zfill(8)
             df.loc[index,'obstype'] = obstype
+            df.loc[index,'filename'] = filename
         return df
 
     def check_submitted(self,unitname,reqnum):
@@ -461,7 +515,7 @@ class WideField(PipeQuery):
     
     def get_max_nite(self,propid=None,process_all=False):
         """Returns expnum,nite of max(expnum) in the exposure table"""
-        base_query = "select max(expnum) from exposure where obstype in ('object','standard')"
+        base_query = "select max(expnum) from PROD.exposure where obstype in ('object','standard')"
         if process_all:
             base_query = base_query
         else:
@@ -477,7 +531,7 @@ class WideField(PipeQuery):
     def get_failed_expnums(self,reqnum,resubmit_max):
         """ Queries database to find number of failed attempts without success.
             Returns expnums for failed, non-null, nonzero attempts."""
-        submitted = "select distinct unitname,attnum,status from pfw_attempt p, task t where t.id=p.task_id and reqnum = '%s'" % (reqnum)
+        submitted = "select distinct unitname,attnum,status from PROD.pfw_attempt p, PROD.task t where t.id=p.task_id and reqnum = '%s'" % (reqnum)
         self.cur.execute(submitted)
         failed_query = self.cur.fetchall()
         df = pd.DataFrame(failed_query,columns=['unitname','attnum','status'])
@@ -505,7 +559,8 @@ class WideField(PipeQuery):
         df = pd.DataFrame(columns=column)
         while query_db:
             # Get a set of exposures
-            query = "select expnum, propid from ops_auto_queue where processed=0 offset %i rows  fetch next 1000 rows only" % (i*1000)
+            query = "select o.expnum, o.propid from ops_auto_queue o, exposure e"
+            query+= " where o.processed=0 and e.nite>20230101 and o.expnum=e.expnum and e.band in ('g','r','i','z') offset %i rows fetch next 1000 rows only" % (i*1000)
             self.cur.execute(query)
 
             temp_df = pd.DataFrame(self.cur.fetchall(), columns=['expnum','propid'])
@@ -516,19 +571,18 @@ class WideField(PipeQuery):
             if temp_df.shape[0] < 1000:
                 query_db = False
  
-            unitnames = ['D00'+str(e) for e  in temp_df.expnum.values]
+            unitnames = ['D'+str(e).zfill(8) for e  in temp_df.expnum.values]
 
-            submitted = "select unitname,status from pfw_attempt a, task t,pfw_request r where r.reqnum=a.reqnum "
-            submitted += "and t.id=a.task_id and r.project='%s' and unitname in ('%s')" % (project,"','".join(unitnames))
+            submitted = "select unitname,status from pfw_attempt a, task t, pfw_request r where r.reqnum=a.reqnum "
+            submitted += "and t.id=a.task_id and r.project like '%s' and unitname in ('%s')" % (project+"%","','".join(unitnames))
             self.cur.execute(submitted)
             failed_query = self.cur.fetchall()
-
             if len(failed_query) > 0:
                 df_fails = pd.DataFrame(failed_query, columns=['unitname','status'])
                 df_fails = df_fails.fillna(-99)
                 for u in df_fails['unitname'].unique():
                     udf = df_fails[df_fails.unitname == u]
-                    e_no = int(u.split('D00')[1])
+                    e_no = int(u.split('D0')[1])
                     # ignore any exposures that are currently running or successful or failed at least three times
                     if any([-99 in udf.status.values, 0 in udf.status.values, udf.shape[0] >= n_failed]):
                         temp_df = temp_df[temp_df['expnum'] != e_no]
@@ -542,7 +596,7 @@ class WideField(PipeQuery):
             df = df.append(temp_df)
             i += 1
 
-        print "%i exposures on to-do list" % (df.shape[0])
+        print("%i exposures on to-do list" % (df.shape[0]))
         query = "select propid, priority from ops_propid"
         self.cur.execute(query)
         p_df = pd.DataFrame(self.cur.fetchall(), columns=['propid', 'priority'])
@@ -551,16 +605,19 @@ class WideField(PipeQuery):
         df['priority'].fillna(3, inplace=True)
         
 
-        print "Never:", df[df['attnum']==0].shape[0], "Once", df[df['attnum']==1].shape[0], "Twice:", df[df['attnum']==2].shape[0]
-        print "Priority 1:", df[df['priority']==1].shape[0], "2:", df[df['priority']==2].shape[0], "3:", df[df['priority']==3].shape[0]
+        print("Never:", df[df['attnum']==0].shape[0], "Once", df[df['attnum']==1].shape[0], "Twice:", df[df['attnum']==2].shape[0])
+        print("Priority 1:", df[df['priority']==1].shape[0], "2:", df[df['priority']==2].shape[0], "3:", df[df['priority']==3].shape[0])
         
         df.expnum = df.expnum.apply(int)
         df.expnum = df.expnum.apply(str)
-        df = df.sort(['priority', 'attnum', 'expnum'])
-
+        #df=df[df['attnum']==0]
+        df = df.sort_values(by=['priority', 'attnum', 'expnum'])
+        #df =df[df['priority']==1]
         if df.shape[0]==0:
-            print "List of exposures is empty.Nothing to do"
+            print("List of exposures is empty.Nothing to do")
             exit()
+        
+        df = df.drop_duplicates()
         return df[['expnum', 'priority']].head(1000) 
         # 90 works better for delve processing and crontab
         # it allows to rfresh a list of exposures every one hour - about 90-95 exposures can be rendered and submited in 1 hr time span
@@ -570,8 +627,8 @@ class WideField(PipeQuery):
         """ Get exposure numbers and band for incoming exposures"""
         if not nites:
             raise Exception("Must specify nite!")
-        print "selecting exposures to submit..."
-        base_query = "select distinct expnum,nite from exposure where obstype in ('object','standard') and \
+        print("selecting exposures to submit...")
+        base_query = "select distinct expnum,nite from PROD.exposure where obstype in ('object','standard') and \
                       object not like '%%pointing%%' and object not like '%%focus%%' and object not like '%%donut%%' \
                       and object not like '%%test%%' and object not like '%%junk%%' and nite in (%s)" % ','.join(nites)
         if process_all:
@@ -584,12 +641,12 @@ class WideField(PipeQuery):
         try:
             [expnums,nites_from_query] = map(list, zip(*results))
         except:
-            print "Warning: No expnums found for nites {}.".format(','.join(nites))
+            print("Warning: No expnums found for nites {}.".format(','.join(nites)))
             exit(0)
         diff = list(set(nites)-set(nites_from_query))
         diff.sort(key=str.lower)
         if diff:
-            print "Warning: No expnums found for nites {}.".format(','.join(diff))    
+            print("Warning: No expnums found for nites {}.".format(','.join(diff)))    
         return expnums
 
     def find_precal(self,date,threshold,override=True,tag=None):
@@ -615,7 +672,7 @@ class WideField(PipeQuery):
         if days > threshold:
             if override is True:
                 if tag is None:
-                    print "Must specify tag if override is True!"
+                    print("Must specify tag if override is True!")
                     exit(0)
                 else:
                     max_tagged = "select distinct unitname,reqnum, attnum from ops_proctag where tag = '%s' and unitname in (select max(unitname) from ops_proctag where tag = '%s')" % (tag,tag)
@@ -624,11 +681,11 @@ class WideField(PipeQuery):
                     try:
                         precal_unitname,precal_reqnum,precal_attnum = last_results[0][0],last_results[0][1],last_results[0][2]
                     except:
-                        print "No tagged precals found. Please check tag or database section used..."
+                        print("No tagged precals found. Please check tag or database section used...")
                         exit(0)
             elif override is False or override is None:
                 if results is None:
-                    print "No precals found. Please manually select input precal..."
+                    print("No precals found. Please manually select input precal...")
                     exit(0)
         precal_nite = precal_unitname
         precal_run = 'r%sp0%s' % (precal_reqnum,precal_attnum)
@@ -642,13 +699,13 @@ class WideField(PipeQuery):
         import subprocess as sp
         # Find log files in /deca_archive and try to locate error
         dict = {}
-        unitnames = ['D00'+str(e) for e in expnum_df['expnum'].values]
+        unitnames = ['D'+str(e).zfill(8) for e in expnum_df['expnum'].values]
 
-        print "Querying database..."
-        query = "select unitname,a.archive_path,status from pfw_attempt a,"
-        query += " task t,pfw_request r where r.reqnum=a.reqnum  and t.id=a.task_id and unitname in ('%s') " % ("','".join(unitnames))
+        print("Querying database...")
+        query = "select unitname,a.archive_path,status from PROD.pfw_attempt a,"
+        query += " PROD.task t, PROD.pfw_request r where r.reqnum=a.reqnum  and t.id=a.task_id and unitname in ('%s') " % ("','".join(unitnames))
         self.cur.execute(query)
-        print "...done"
+        print("...done")
 
         # Create a dictionary with some info about exposures from list
         for unit, path, sts in self.cur.fetchall():
@@ -676,12 +733,12 @@ class WideField(PipeQuery):
         no_of_exps = len(info)
         for nb, unitname in enumerate(info):
             os.system('clear')
-            expnum = unitname.split("D00")[1]
-            print "\n ##########\n %i/%i  %s \n ##########\n" % (nb+1, no_of_exps, unitname)
+            expnum = unitname.split("D0")[1]
+            print("\n ##########\n %i/%i  %s \n ##########\n" % (nb+1, no_of_exps, unitname))
                 
             if not interactive: # Check statuses and catalogs in /deca_archive
                 for i, row in enumerate(info[unitname]):
-                    print "[%2i] %s STATUS: %3s  IN: %s" % (i, row['path'], row['status'], row['in_arch'])
+                    print("[%2i] %s STATUS: %3s  IN: %s" % (i, row['path'], row['status'], row['in_arch']))
                 in_arch = []
                 statuses = []
                 logs_no = []
@@ -692,12 +749,12 @@ class WideField(PipeQuery):
                    (all(in_arch) and any(item in 245 for item in statuses)) or \
                     any(item == 0 for item in statuses) or \
                     any(item == None for item in statuses):
-                    print "Consider it done"
+                    print("Consider it done")
                     time.sleep(1)
                     # Remove exp number from the input dataframe
                     expnum_df = expnum_df[expnum_df['expnum'] != expnum]
                 else:
-                    print "Will be submitted to queue"
+                    print("Will be submitted to queue")
             else: # Interactive mode
                 # Look for logfiles in /deca_archives
                 # ask what to do
@@ -718,15 +775,15 @@ class WideField(PipeQuery):
                             log_list=[]
                         info[unitname][i]['loglist'] = log_list
                         info[unitname][i]['logs_no'] = len(log_list)
-                        print "[%2i] %s STATUS: %3s  IN: %s N(Logs): %i " % (i, row['path'], row['status'], row['in_arch'], len(log_list))
+                        print("[%2i] %s STATUS: %3s  IN: %s N(Logs): %i " % (i, row['path'], row['status'], row['in_arch'], len(log_list)))
                     else:
-                        print "[%2i] %s STATUS: %3s  IN: %s N(Logs): %i " % (i, row['path'], row['status'], row['in_arch'], 0)
+                        print("[%2i] %s STATUS: %3s  IN: %s N(Logs): %i " % (i, row['path'], row['status'], row['in_arch'], 0))
                
                 while iterate_logs:
-                    print "Submit? [y]es/[n]o, [a] to print last 10 lines of logfiles, or [q]uit!"
+                    print("Submit? [y]es/[n]o, [a] to print last 10 lines of logfiles, or [q]uit!")
                     prc = raw_input()
                     if prc == 'q':
-                        print "Quit!"
+                        print("Quit!")
                         exit()
                     elif prc == 'n':
                         expnum_df = expnum_df[expnum_df['expnum'] != expnum]
@@ -735,11 +792,11 @@ class WideField(PipeQuery):
                         iterate_logs = False
                     elif prc == 'a':
                         for lf in info[unitname][i]['loglist']:
-                            print "\n Printing..."
-                            print "\n ****** %s" %  lf
+                            print("\n Printing...")
+                            print("\n ****** %s" %  lf)
                             cmd = 'tail -n 10 %s' % lf
                             a = sp.Popen(cmd, stdout=sp.PIPE, shell=True)
-                            print '\n', a.communicate()[0]
+                            print('\n', a.communicate()[0])
                     else:
                         pass
 
@@ -757,9 +814,9 @@ class NitelyCal(PipeQuery):
         explist = list(divide_chunks(expnum_list,1000))
         master_list = []
         for l in explist:
-            nite_query = "select distinct nite from exposure where \
+            nite_query = "select distinct nite from {schema}.exposure where \
                           expnum in ({explist}) \
-                          order by nite".format(explist=','.join(str(n) for n in l))
+                          order by nite".format(schema = self.schema,explist=','.join(str(n) for n in l))
             self.cur.execute(nite_query)
             each_list = [n[0] for n in self.cur.fetchall()]
             master_list += each_list
@@ -774,10 +831,10 @@ class NitelyCal(PipeQuery):
 
     def get_max_nite(self):
         """Get nite of max dflat"""
-        max_dflat = "select max(expnum) from exposure where obstype='dome flat'"
+        max_dflat = "select max(expnum) from {schema}.exposure where obstype='dome flat'".format(schema=self.schema)
         self.cur.execute(max_dflat)
         max_expnum = self.cur.fetchone()[0]
-        fetch_nite = "select distinct nite from exposure where expnum=%s" % (max_expnum)
+        fetch_nite = "select distinct nite from {schema}.exposure where expnum={expnum}".format(schema=self.schema,expnum=max_expnum)
         self.cur.execute(fetch_nite)
         dflat_nite = self.cur.fetchone()[0]
         return max_expnum,dflat_nite   
@@ -786,16 +843,16 @@ class NitelyCal(PipeQuery):
         """Return calibration information for each nite found in nites_list"""
         if exclude == 'B':
             cal_query = "select nite,date_obs,expnum,band,exptime,obstype,program,propid,object \
-                     from exposure where obstype in ('dome flat') \
-                     and nite in (%s) order by expnum" % ','.join(nites_list)
+                     from {schema}.exposure where obstype in ('dome flat') \
+                     and nite in ({nites}) order by expnum".format(schema = self.schema,nites = ','.join(nites_list))
         elif exclude == 'F':
             cal_query = "select nite,date_obs,expnum,band,exptime,obstype,program,propid,object \
-                     from exposure where obstype in ('zero') \
-                     and nite in (%s) order by expnum" % ','.join(nites_list)
+                     from {schema}.exposure where obstype in ('zero') \
+                     and nite in ({nites}) order by expnum".format(schema=self.schema,nites= ','.join(nites_list))
         else:
             cal_query = "select nite,date_obs,expnum,band,exptime,obstype,program,propid,object \
-                     from exposure where obstype in ('zero','dome flat') \
-                     and nite in (%s) order by expnum" % ','.join(nites_list)
+                     from {schema}.exposure where obstype in ('zero','dome flat') \
+                     and nite in ({nites}) order by expnum".format(schema=self.schema,nites= ','.join(nites_list))
         self.cur.execute(cal_query)
         cal_info = self.cur.fetchall()
         return cal_info
@@ -807,9 +864,9 @@ class NitelyCal(PipeQuery):
                      and nite in (%s) group by band,obstype order by obstype" % ','.join(nites_list)
         self.cur.execute(cal_query)
         cal_info = self.cur.fetchall()
-        print " Obstype         Band      Count"
+        print(" Obstype         Band      Count")
         for row in cal_info:
-            print "%09s  %09s  %09s" % (row[2], row[1], row[0])
+            print("%09s  %09s  %09s" % (row[2], row[1], row[0]))
 
     def update_df(self,df):
         """ Takes a pandas dataframe and for each exposure add column:value
@@ -871,7 +928,7 @@ class PreBPM(PipeQuery):
     def get_failed_expnums(self,reqnum,resubmit_max):
         """ Queries database to find number of failed attempts without success.
             Returns expnums for failed, non-null, nonzero attempts."""
-        submitted = "select distinct unitname,attnum,status from pfw_attempt p, task t where t.id=p.task_id and reqnum = '%s'" % (reqnum)
+        submitted = "select distinct unitname,attnum,status from PROD.pfw_attempt p, PROD.task t where t.id=p.task_id and reqnum = '%s'" % (reqnum)
         self.cur.execute(submitted)
         failed_query = self.cur.fetchall()
         df = pd.DataFrame(failed_query,columns=['unitname','attnum','status'])
@@ -897,7 +954,7 @@ class PreBPM(PipeQuery):
         taglist = tag.split(',')
         tag_list_of_dict = []
         for t in taglist:
-            expnum_query = "select distinct expnum from exposuretag where tag='%s'" % t
+            expnum_query = "select distinct expnum from PROD.exposuretag where tag='%s'" % t
             self.cur.execute(expnum_query)
             results = self.cur.fetchall()
             expnum_list = [exp[0] for exp in results]
@@ -913,7 +970,7 @@ class PhotoZ(PipeQuery):
     def get_failed_chunks(self, reqnum,resubmit_max):
         """ Queries database to find number of failed attempts without success.
             Returns expnums for failed, non-null, nonzero attempts."""
-        submitted = "select distinct unitname,attnum,status from pfw_attempt p, task t where t.id=p.task_id and reqnum = '%s'" % (reqnum)
+        submitted = "select distinct unitname,attnum,status from PROD.pfw_attempt p, PROD.task t where t.id=p.task_id and reqnum = '%s'" % (reqnum)
         self.cur.execute(submitted)
         failed_query = self.cur.fetchall()
         df = pd.DataFrame(failed_query,columns=['unitname','attnum','status'])
@@ -936,7 +993,7 @@ class PhotoZ(PipeQuery):
 
     def check_proctag(self,tag):
         """ Check to see if specified processing tag exists in PROCTAG table"""
-        query = "select count(*) from proctag where tag = '{tag}'".format(tag=tag)
+        query = "select count(*) from PROD.proctag where tag = '{tag}'".format(tag=tag)
         self.cur.execute(query)
         count = self.cur.fetchone()[0]
         return count
@@ -963,7 +1020,7 @@ class PhotoZ(PipeQuery):
     def get_failed_chunks(self, reqnum,resubmit_max):
         """ Queries database to find number of failed attempts without success.
             Returns expnums for failed, non-null, nonzero attempts."""
-        submitted = "select distinct unitname,attnum,status from pfw_attempt p, task t where t.id=p.task_id and reqnum = '%s'" % (reqnum)
+        submitted = "select distinct unitname,attnum,status from PROD.pfw_attempt p, PROD.task t where t.id=p.task_id and reqnum = '%s'" % (reqnum)
         self.cur.execute(submitted)
         failed_query = self.cur.fetchall()
         df = pd.DataFrame(failed_query,columns=['unitname','attnum','status'])

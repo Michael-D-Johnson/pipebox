@@ -53,10 +53,10 @@ with open(des_services_path, "a") as desservices:
     desservices.write("\n")
     desservices.close()
 
-print "\nDES services file:\n\t%s" % des_services_path
-print "\thas been updated with the JIRA information:\n" 
-print "\nConfiguration file written to:\n\t%s" % user_config_file
-print "\nMake sure you setup PIPEBOX_WORK environmental variable:"
-print "\texport PIPEBOX_WORK=%s" % pipebox_work_path
-print "\tor"
-print "\tsetenv PIPEBOX_WORK %s" % pipebox_work_path
+print("\nDES services file:\n\t%s" % des_services_path)
+print("\thas been updated with the JIRA information:\n")
+print("\nConfiguration file written to:\n\t%s" % user_config_file)
+print("\nMake sure you setup PIPEBOX_WORK environmental variable:")
+print("\texport PIPEBOX_WORK=%s" % pipebox_work_path)
+print("\tor")
+print("\tsetenv PIPEBOX_WORK %s" % pipebox_work_path)

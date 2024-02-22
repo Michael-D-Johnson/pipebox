@@ -1,0 +1,47 @@
+<module>
+    <null-weight-bkg>
+        wrappername = genwrap.py
+        wrapperloop = ccdnum,band
+        modnamepat = ${modnamepat_ccdnumband}
+        <file>
+            <red_starflat>
+                filetype = red_starflat
+                filepat = ccdnum_band
+                flabel = starflat
+                fsuffix = fits
+                dirpat = se
+                rundir = red/starflat
+            </red_starflat>
+            <red_nullweight_bkg>
+                # what metadata to get
+                filetype = red_bkg_nullwgt
+
+                # how to name the file
+                filepat = ccdnum_band
+                flabel = nullweight-bkg
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                ops_enddir = red/bkg
+                rundir = red/bkg
+
+                # whether to bring file home
+                savefiles = false
+                compress_files = true
+            </red_nullweight_bkg>
+        </file>
+        <exec_1>
+            execname = null_weights
+            used = file.red_starflat
+            was_generated_by = file.red_nullweight_bkg
+            ancestry = file.red_starflat:file.red_nullweight_bkg
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                i = ${file.red_starflat.fullname}
+                o = ${file.red_nullweight_bkg.fullname}
+                null_mask = BADAMP,EDGE,EDGEBLEED,STAR,TRAIL
+            </cmdline>
+        </exec_1>
+    </null-weight-bkg>
+</module>

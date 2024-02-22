@@ -1,0 +1,26 @@
+<module>
+<ingest-scamp-xml-exp>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        <exec_1>
+            cmd_hyphen = mixed_gnu
+            execname = datafile_ingest.py
+            used = file.scamp_xml
+            <cmdline>
+                filename = ${file.scamp_xml.fullname}
+                filetype = coadd_xml_scamp_2
+            </cmdline>
+        </exec_1>
+        <file>
+            ### inputs
+            <scamp_xml>
+                # how to get file data
+                depends coadd-astrorefine.file.scamp_xml
+
+                # where it lives in jobroot
+                dirpat = mepoch
+                rundir = qa
+            </scamp_xml>
+        </file>
+    </ingest-scamp-xml-exp>
+</module>

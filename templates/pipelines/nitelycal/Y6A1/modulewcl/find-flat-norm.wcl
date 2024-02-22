@@ -1,0 +1,55 @@
+<module>
+    <find-flat-norm>
+        <exec_1>
+            ancestry = list.inlist.dflatcor:file.normfile
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                inlist = ${list.inlist.fullname}
+                outnorm = ${file.normfile.fullname}
+            </cmdline>
+            execname = find_flat_normalization
+            used = list.inlist.dflatcor
+            was_generated_by = file.normfile
+        </exec_1>
+        <file>
+            <dflatcor>
+                dirpat = precal
+                listonly = True
+                rundir = dflatcor
+            </dflatcor>
+            <normfile>
+                dirpat = precal
+                filepat = nite_band
+                filetype = text
+                flabel = flatnorm
+                fsuffix = txt
+                ops_enddir = QA
+                rundir = QA
+                savefiles = True
+            </normfile>
+        </file>
+        <list>
+            <inlist>
+                # where to get data
+                depends mkdflatcor.file.dflatcor
+
+                # how many lists to make
+                divide_by = band
+
+                # name and location of list file
+                filepat = nite_band
+                flabel = dflatcor-for-norm
+                fsuffix = list
+
+                dirpat = precal
+                rundir = list
+                ops_enddir = list
+                columns = dflatcor.fullname
+            </inlist>
+        </list>
+        loopobj = list.inlist
+        modnamepat = ${modnamepat_nite_band}
+        wrapperloop = band
+        wrappername = genwrap.py
+    </find-flat-norm>
+</module>

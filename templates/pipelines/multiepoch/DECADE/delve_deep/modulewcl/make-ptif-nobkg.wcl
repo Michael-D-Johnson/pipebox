@@ -1,0 +1,71 @@
+<module>
+    <make-ptif-nobkg>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        <exec_1>
+            execname = stiff
+            cmd_hyphen = allsingle
+            used = file.ptif_config, file.coadd_nobkg, file.coadd_det
+            was_generated_by = file.coadd_ptif_nobkg
+            ancestry = file.coadd_nobkg:file.coadd_ptif_nobkg, file.coadd_det:file.coadd_ptif_nobkg
+            <cmdline>
+                _01_coadd = ${file.coadd_nobkg.fullname}
+                _02_det = ${file.coadd_det.fullname}
+                c = ${file.ptif_config.fullname}   # default.stiff
+                OUTFILE_NAME = ${file.coadd_ptif_nobkg.fullname}  # coadd/DES0002+0001.tiff
+                # do we need quotes here?
+                DESCRIPTION = 'PTIF file for DES tile ${tilename}'
+                COPYRIGHT = NCSA/DESDM
+                NTHREADS = ${nthreads}
+            </cmdline>
+        </exec_1>
+        <file>
+            ### inputs
+            <ptif_config>
+                # what input file is named
+                filename = ${ptif_config_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </ptif_config>
+            <coadd_nobkg>
+                # how to get file data
+                depends band-assemble-nobkg.file.coadd_nobkg
+                ignore_multiple_error = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_nobkg>
+            <coadd_det>
+                # how to get file data
+                depends det-assemble.file.coadd_det
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_det>
+
+            ### outputs
+            <coadd_ptif_nobkg>   # graphical image
+                # what metadata to save
+                filetype = coadd_ptif_nobkg
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = nobkg
+                fsuffix = ptif
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = qa
+                ops_enddir = qa
+            </coadd_ptif_nobkg>
+        </file>
+    </make-ptif-nobkg>
+</module>

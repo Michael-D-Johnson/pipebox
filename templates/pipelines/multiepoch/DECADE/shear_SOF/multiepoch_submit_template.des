@@ -1,0 +1,56 @@
+{% extends "supportwcl/generic_submit.des" %}
+{% block content %}
+
+{% if args.inputcals_file %}
+<<include {{args.inputcals_file}}>>
+{% else %}
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/DECADE/{{args.campaign}}/inputcals/inputs.des>>
+{% endif %}
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/DECADE/{{args.campaign}}/modulewcl/modnamepat.wcl>>
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/DECADE/{{args.campaign}}/modulewcl/shredx-make-fofs.wcl>>
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/DECADE/{{args.campaign}}/modulewcl/shredx.wcl>>
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/DECADE/{{args.campaign}}/modulewcl/collate-shredx.wcl>>
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/DECADE/{{args.campaign}}/modulewcl/sof-make-fofs.wcl>>
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/DECADE/{{args.campaign}}/modulewcl/sof.wcl>>
+<<include {{args.pipebox_dir}}/templates/pipelines/multiepoch/DECADE/{{args.campaign}}/modulewcl/collate-sof.wcl>>
+
+master_use_fwthreads = True
+
+blocklist = me
+<block>
+    <me>
+       modulelist = shredx-make-fofs,shredx,collate-shredx,sof-make-fofs, sof, collate-sof
+    </me>
+</block>
+
+
+# these 2 are for debugging purposes
+purge_job_dir = never
+compress_cleanup = False
+
+basket = {{args.tile}} # FIX THIS
+proctag = {{args.proctag}}
+meds_proctag = SHEAR_TEST_COADD
+tilename = {{args.tile}}
+unitname = ${tilename}
+
+bands = {{ args.bands }}
+det_bands = {{args.det_bands}}
+
+{% if args.rundir %}
+ops_run_dir = {{ args.rundir }}
+{% else %}
+ops_run_dir = ${project}/${pipeline}/${campaign}/${basket}-r${reqnum}/p${attnum:2}
+{% endif %}
+#submit_run_dir = /cluster_scratch/desdm_ops/${home_archive}/submit/${ops_run_dir}
+#submit_run_dir = /local/prod_scratch/desdm_ops/${home_archive}/submit/${ops_run_dir}
+
+nthreads = {{ args.nthreads }}
+
+save_run_vals = tilename, jira_id
+
+<<inclfunc mepipelineappintg.mepochmisc.get_tile_info(submit_des_services, submit_des_db_section, tilename)>>
+
+######################################################################
+
+{% endblock %}

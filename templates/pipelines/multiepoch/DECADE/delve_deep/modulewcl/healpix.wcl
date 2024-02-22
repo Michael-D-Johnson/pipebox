@@ -1,0 +1,49 @@
+<module>
+    <healpix>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        <exec_1>
+            execname = hpixDB
+            cmd_hyphen = mixed_gnu
+            used = file.det_cat
+            was_generated_by = file.hpix
+            ancestry = file.det_cat:file.hpix
+            <cmdline>
+                input = ${file.det_cat.fullname}
+                output = ${file.hpix.fullname}
+                c = ${cat_columns}
+            </cmdline>
+        </exec_1>
+        <file>
+            ### inputs
+            <det_cat>
+                # how to get file data
+                depends det-catalog.file.det_cat
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = cat
+            </det_cat>
+
+            ### outputs
+            <hpix>
+                # what metadata to save
+                filetype = coadd_hpix
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = hpix
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = cat
+                rundir = cat
+            </hpix>
+        </file>
+    </healpix>
+</module>

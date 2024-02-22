@@ -73,7 +73,7 @@ save_run_vals = tilename, jira_id
 
 request_cpus = 8
 ######################################################################
-blocklist = me,meds
+blocklist = me #,meds
 <block>
     <me>
      #modulelist = combine-se-cat, coadd-astrorefine, split-scamp-head, bigquery, null-weight-for-coadd, band-swarp-wgt, band-swarp-msk, band-swarp-wgt-nobkg,band-swarp-msk-nobkg, band-assemble, band-assemble-nobkg, det-swarp-wgt, det-swarp-msk, det-assemble, make-color-img, make-ptif, band-create-psfex-catalog, det-create-psfex-catalog, band-psfex, det-psfex, band-coadd-catalog, det-catalog, extinction, healpix, wavg, mepoch-ingest-no-mangle

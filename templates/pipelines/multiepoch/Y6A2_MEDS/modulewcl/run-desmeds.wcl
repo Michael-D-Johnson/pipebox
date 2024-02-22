@@ -1,0 +1,300 @@
+<module>
+    <run-desmeds>
+        modnamepat = ${modnamepat_tile_band}
+        wrappername = genwrap.py
+        wrapperloop = band
+        loopobj = list.red
+        max_fwthreads = ${nthreads}
+        <exec_1>
+            <cmdline>
+                tilename = ${tilename}
+                band = ${band}
+                coadd_image = ${file.coadd.fullname}
+                coadd_cat = ${file.coadd_cat.fullname} 
+                coadd_seg = ${file.coadd_segmap.fullname}
+                coadd_psf = ${file.coadd_psf.fullname}
+                nwg_flist = ${file.nwglist.fullname}
+                hdr_flist = ${list.hdr.fullname}
+                red_flist = ${list.red.fullname}
+                psf_flist = ${list.psfmod.fullname}
+                bkg_flist = ${list.redbkg.fullname}
+                seg_flist = ${list.redseg.fullname}
+                meds_output = ${file.meds.fullname}
+                medsconf = ${file.medsconf.fullname}
+                tileconf = ${file.tileconf.fullname}
+                coadd_object_map = ${file.objmap.fullname}
+                source_type = finalcut
+                coadd_object_tablename = Y6A1_COADD_OBJECT_SAVE
+                psf_info = ${file.piffqa.fullname}
+            </cmdline>
+            execname = run_desmeds
+            cmd_hyphen =  mixed_gnu
+            used = file.medsconf,file.coadd,file.coadd_cat,file.coadd_segmap.fullname,list.red.red,list.redbkg.bkg,list.redseg.seg,list.hdr.head,list.psfmod.psf, file.coadd_psf.fullname,file.piffqa.fullname
+            was_generated_by = file.tileconf,file.meds,file.objmap, file.nwglist
+            #ancestry = file.coadd_cat:file.meds,file.,file.coadd:file.meds,file.coadd_cat:file.tileconf,file.coadd:file.tileconf
+        </exec_1>
+        <list>
+            <psfmod>
+                depends medsquery.list.medsfiles.psf
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # what to name list
+                filepat = tile_band
+                flabel = med-psfmodel
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = psf.fullname
+            </psfmod>
+            <red>
+                depends medsquery.list.medsfiles.red
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # what to name list
+                filepat = tile_band
+                flabel = med-red
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = red.fullname,red.mag_zero
+            </red>
+            <hdr>
+                depends medsquery.list.medsfiles.head
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # what to name list
+                filepat = tile_band
+                flabel = med-head
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = head.fullname 
+            </hdr>
+            <redbkg>
+                depends medsquery.list.medsfiles.bkg
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # what to name list
+                filepat = tile_band
+                flabel = med-red-bkg
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = bkg.fullname 
+            </redbkg>
+            <redseg>
+                depends medsquery.list.medsfiles.seg
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # how to name list
+                filepat = tile_band
+                flabel = med-red-segmap
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = seg.fullname 
+            </redseg>
+        </list>
+        <file>
+            <piffqa>
+                depends piff-qa.file.piffqa
+                match = tilename
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = piff
+            </piffqa>
+            <coadd>
+                dirpat = mepoch
+                pfw_attempt_id = ${coadd_id}
+                filetype = coadd
+                output_fields = filename,band
+                query_fields = filetype,pfw_attempt_id
+                query_table = coadd
+                match = band
+                rundir = coadd
+                columns = coadd.fullname,coadd.band
+            </coadd>
+            <coadd_psf>
+                dirpat = mepoch
+                pfw_attempt_id = ${coadd_id}
+                filetype = coadd_psfex_model
+                output_fields = filename,band
+                query_fields = filetype,pfw_attempt_id
+                query_table = miscfile
+                match = band
+                rundir = psf
+                columns = coadd_psf.fullname,coadd_psf.band
+            </coadd_psf>
+            <coadd_cat>
+                dirpat = mepoch
+                pfw_attempt_id = ${coadd_id}
+                filetype = coadd_cat
+                output_fields = filename,band
+                query_fields = filetype,pfw_attempt_id
+                query_table = catalog
+                match = band
+                rundir = coadd_cat
+                columns = coadd_cat.fullname,coadd_cat.band
+            </coadd_cat>
+            <coadd_segmap>
+                dirpat = mepoch
+                pfw_attempt_id = ${coadd_id}
+                filetype = coadd_segmap
+                output_fields = filename,band
+                query_fields = filetype,pfw_attempt_id
+                query_table = miscfile
+                match = band
+                rundir = seg
+                columns = coadd_segmap.fullname,coadd_segmap.band
+            </coadd_segmap>
+            <medsconf>
+                # what input file is named
+                filename = ${cfgver}_meds-desdm-${meds_config_ver}.yaml
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </medsconf>
+            <psf>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = se
+                rundir = psf
+            </psf>
+            <red>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = se
+                rundir = red
+            </red>
+            <bkg>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = bkg
+            </bkg>
+            <seg>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = seg
+            </seg>
+            <head>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = aux 
+            </head>
+
+            ### output files
+            <nwglist>
+                # what metadata to save
+                filetype = medslist
+
+                # how to name output file
+                filepat = tile_band
+                flabel = meds-nwglist
+                fsuffix = list
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = meds
+                rundir = meds
+            </nwglist>
+            <objmap>
+                # what metadata to save
+                filetype = coadd_meds_objmap
+
+                # how to name output file
+                filepat = tile_band
+                flabel = meds-objmap
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = true
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = meds
+                rundir = meds
+            </objmap>
+            <meds>
+                # what metadata to save
+                filetype = coadd_meds
+
+                # how to name output file
+                filepat = tile_band
+                flabel = meds-${campaign}
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = true
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = meds
+                rundir = meds
+            </meds>
+            <tileconf>
+                # what metadata to save
+                filetype = coadd_meds_yaml
+
+                # how to name output file
+                filepat = tile_band
+                flabel = meds-${campaign}
+                fsuffix = config
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = etc
+                rundir = etc
+            </tileconf>
+        </file>
+    </run-desmeds>
+</module>

@@ -1,0 +1,202 @@
+<module>
+    <query-for-pizza-cutter-list>
+        modnamepat = ${modnamepat_tile_band}
+        wrappername = genwrap.py
+        wrapperloop = band
+        loopobj = list.coadd
+        #loopobj = list.hdr
+        max_fwthreads = 1
+          <exec_1>
+            <cmdline>
+                o = ${file.outfile.fullname}
+                A = ${coadd_id}
+                v = 2
+                target_path = ${file.targetpath.fullname}
+                zeropoint = None
+                bkgimg = _flag
+                segmap = _flag
+                psfmodel = _flag
+                usepiff = _flag
+                pifftag = Y6A1_PIFF
+                bandlist = ${band}
+                me_proctag = ${proctag}
+                pizza-cutter-yaml = pizza-cutter/${tilename}_r${reqnum}p${attnum:2}_pizza-cutter-info
+                bkg_list = ${file.pizza_cutter_bkg_list.fullname}
+                imglist = ${file.pizza_cutter_img_list.fullname}
+                ima_list = ${file.pizza_cutter_ima_list.fullname}
+                head_list = ${file.pizza_cutter_head_list.fullname}
+                seg_list = ${file.pizza_cutter_seg_list.fullname}
+                psf_list = ${file.pizza_cutter_psf_list.fullname}
+                gaia-cat = ${file.cat_gaia.fullname}
+            </cmdline>
+            execname = query_coadd_for_meds.py
+            cmd_hyphen =  mixed_gnu
+            used = list.coadd.coadd,file.targetpath,file.cat_gaia
+            #used = list.hdr.head,file.targetpath
+            was_generated_by = file.pizza_cutter_yaml, file.pizza_cutter_bkg_list, file.pizza_cutter_img_list, file.pizza_cutter_ima_list, file.pizza_cutter_seg_list, file.pizza_cutter_psf_list, file.pizza_cutter_head_list, file.outfile
+            #ancestry = 
+        </exec_1>
+        <list>
+           <hdr>
+                depends query-for-pizza-cutter.list.medsfiles.head
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # what to name list
+                filepat = tile_band
+                flabel = hdr
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = head.fullname
+            </hdr>
+           <coadd>
+                pfw_attempt_id = ${coadd_id}
+                filetype = coadd
+                output_fields = filename,band
+                query_fields = filetype,pfw_attempt_id
+                query_table = coadd
+                join mdetect_band.band = coadd.band
+
+                divide_by = band
+                sortkey = (filename, False, False)
+
+                # what to name list
+                filepat = tile_band
+                flabel = coadd
+                fsuffix = list
+
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+
+                # what to put in list
+                columns = coadd.fullname,coadd.band
+            </coadd> 
+        </list>
+        <file>
+            <coadd>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd>
+            <cat_gaia>
+                filetype = cat_tile_gaia
+                filename = ${tilename}_GAIA_DR2_v1.fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = cat_gaia
+            </cat_gaia>
+            <targetpath>
+                filetype = config
+                filename = ${cfgver}_pizza-cutter-targetpath-Y6A1v1.yaml
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = config
+            </targetpath>
+            <outfile>
+                filetype = text
+                filepat = tile_band
+                flabel = pizza-cutter-out
+                fsuffix = wcl
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = pizza-cutter
+                rundir = pizza-cutter
+            </outfile>
+            <pizza_cutter_yaml>
+                filetype = coadd_pizza_cutter_yaml
+                filepat = tile_band
+                filename = ${tilename}_r${reqnum}p${attnum:2}_pizza-cutter-info_${band}.yaml
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = pizza-cutter
+                rundir = pizza-cutter                
+                savefiles = true
+            </pizza_cutter_yaml>
+            <pizza_cutter_bkg_list>
+                filetype = list
+                filepat = tile_band
+                flabel = pizza-cutter-bkg
+                fsuffix = list
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list/pizza-cutter
+                rundir = list/pizza-cutter
+                savefiles = false
+            </pizza_cutter_bkg_list>
+            <pizza_cutter_ima_list>
+                filetype = list
+                filepat = tile_band
+                flabel = pizza-cutter-ima
+                fsuffix = list
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list/pizza-cutter
+                rundir = list/pizza-cutter
+                savefiles = false
+            </pizza_cutter_ima_list>
+           <pizza_cutter_img_list>
+                filetype = list
+                filepat = tile_band
+                flabel = pizza-cutter-img
+                fsuffix = list
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list/pizza-cutter
+                rundir = list/pizza-cutter
+                savefiles = false
+            </pizza_cutter_img_list> 
+            <pizza_cutter_seg_list>
+                filetype = list
+                filepat = tile_band
+                flabel = pizza-cutter-seg
+                fsuffix = list
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list/pizza-cutter
+                rundir = list/pizza-cutter
+                savefiles = false
+            </pizza_cutter_seg_list>
+            <pizza_cutter_head_list>
+                filetype = list
+                filepat = tile_band
+                flabel = pizza-cutter-head
+                fsuffix = list
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list/pizza-cutter
+                rundir = list/pizza-cutter   
+                savefiles = false
+            </pizza_cutter_head_list>
+            <pizza_cutter_psf_list>
+                filetype = list
+                filepat = tile_band
+                flabel = pizza-cutter-psf
+                fsuffix = list
+                # where to put list
+                dirpat = mepoch
+                ops_enddir = list/pizza-cutter
+                rundir = list/pizza-cutter
+                savefiles = false
+            </pizza_cutter_psf_list>
+            <head>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = aux
+            </head>
+        </file>
+    </query-for-pizza-cutter-list>
+</module>

@@ -1,0 +1,36 @@
+<module> 
+    <split-scamp-ahead>
+        wrappername = genwrap.py 
+        wrapperloop = expnum
+        modnamepat=${modnamepat_expband}
+
+        <file>
+            <ahead_full>
+                filetype = config
+                filename = ${confignite}_decam_pvmodel_${desepoch}_${band}.ahead
+                dirpat = se
+        		ops_enddir = aux
+                rundir = config
+            </ahead_full>
+            <ahead_partial>
+                filetype = config 
+		        filename = ${camsym}${expnum:8}_${band}_r${reqnum}p${attnum:2}_scamp.ahead
+                dirpat = se
+                ops_enddir = aux
+                rundir = aux
+                savefiles = false
+            </ahead_partial>
+        </file>
+        <exec_1>
+            execname = split_ahead_by_ccd.py
+            used = file.ahead_full
+            was_generated_by = file.ahead_partial
+            ancestry = file.ahead_full:file.ahead_partial
+            <cmdline>
+        		i = ${file.ahead_full.fullname}
+                o = ${file.ahead_partial.fullname}
+                c = ${ccdnum}
+            </cmdline>
+        </exec_1>
+    </split-scamp-ahead>
+</module>

@@ -2,9 +2,8 @@
 
 from pipebox import pipeline
 
-
 # initialize and get options
-print "Collecting data..."
+print("Collecting data...")
 nitelycal = pipeline.NitelyCal()   
 args = nitelycal.args
 if args.combine:

@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-import os,sys
 from pipebox import pipeline
 
 # initialize and get options
-print "Collecting data..."
+print("Collecting data...")
 hostname = pipeline.HostName()
 args  = hostname.args
 

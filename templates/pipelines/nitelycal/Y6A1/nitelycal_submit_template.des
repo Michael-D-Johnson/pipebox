@@ -1,0 +1,91 @@
+{% extends "supportwcl/generic_submit.des" %}
+{% block content %}
+
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/modnamepat.wcl>>
+
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/crosstalk-bias.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/mkbiascor.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/crosstalk-dflat.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/pixcorrect-dflat.wcl>>
+{% if args.epoch_name in ['SVE1','SVE2'] %}
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/SV-skycombine-pixcor-dflat.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/SV-skycombine-dflatcor.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/SV-skycombine-norm-dflatcor.wcl>>
+{% else %}
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/skycombine-pixcor-dflat.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/skycombine-dflatcor.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/skycombine-norm-dflatcor.wcl>>
+{% endif %}
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/skycompare-pixcor.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/mkdflatcor.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/skycompress-dflatcor.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/find-flat-norm.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/scale-flat.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/skycompress-norm-dflatcor.wcl>>
+
+{% if args.inputcals_file %}
+<<include {{args.inputcals_file }}>>
+{% else %}
+{% if args.epoch_name %}
+<<include {{ args.pipebox_dir }}/templates/pipelines/nitelycal/{{ args.campaign }}/modulewcl/inputs.wcl>>
+{% endif %}
+{% endif %}
+bias_expnum = {{ args.bias_list }}
+dflat_expnum = {{ args.flat_list }}
+
+
+{% if not args.labels %}
+label = {{ args.campaign }}_{{ args.niterange }}
+{% endif %}
+
+nite = {{ args.niterange }}
+unitname = ${nite}
+
+{% if args.ccdnum %}
+ccdnum = {{ args.ccdnum }}
+{% else %}
+ccdnum = {{args.cal_df[(args.cal_df.filetype=='None')].ccdnum.values[0]}}
+{% endif %}
+
+{% if args.rundir %}
+ops_run_dir = {{ args.rundir }}
+{% else %}
+ops_run_dir = ${project}/${pipeline}/{{args.campaign}}/${nite}-r${reqnum}/p${attnum:2}
+{% endif %}
+
+save_run_vals = nite, camsym, jira_id
+
+<filename_pattern>
+    nite_band = ${camsym}_n${nite}_${band}_r${reqnum}p${attnum:2}_${flabel}.${fsuffix}
+</filename_pattern>
+
+
+### Input Calibrations ###
+hupdatefile = ${confignite}_{{args.cal_df[(args.cal_df.filetype=='config')].filepat.values[0]}}
+lintablefile = {{args.cal_df[(args.cal_df.filetype=='cal_lintable')].filename.values[0]}}
+
+blocklist = bias-exp, bias-ccd, dflat-exp, dflat-band
+
+<block>
+    <bias-exp>
+        divide_jobs_by = expnum
+        expnum = ${bias_expnum}
+        modulelist = crosstalk-bias
+    </bias-exp>
+    <bias-ccd>
+        divide_jobs_by = ccdnum
+        modulelist = mkbiascor
+    </bias-ccd>
+    <dflat-exp>
+        divide_jobs_by = expnum
+        expnum = ${dflat_expnum}
+        modulelist = crosstalk-dflat, pixcorrect-dflat, skycombine-pixcor-dflat, skycompare-pixcor
+    </dflat-exp>
+    <dflat-band>
+        divide_jobs_by = band
+        expnum = ${dflat_expnum}
+        modulelist = mkdflatcor, skycompress-dflatcor, skycombine-dflatcor, find-flat-norm, scale-flat, skycompress-norm-dflatcor, skycombine-norm-dflatcor
+    </dflat-band>
+</block>
+
+{% endblock %}

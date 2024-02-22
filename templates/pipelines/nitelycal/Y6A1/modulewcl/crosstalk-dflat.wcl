@@ -1,0 +1,64 @@
+<module>
+    <crosstalk-dflat>
+        <exec_1>
+            ancestry = file.raw:file.xtalked, file.xtalkcoeff:file.xtalked, file.hupdate:file.xtalked
+            <cmdline>
+                _01_raw = ${file.raw.fullname}
+                _02_xtalked = xtalked-dflat/${camsym}${expnum:8}_${band}_c%02d_r${reqnum}p${attnum:2}_dflat.fits
+                ccdlist = ${ccdnum}
+                crosstalk = ${file.xtalkcoeff.fullname}
+                overscanfunction = 0
+                overscanorder = 1
+                overscansample = 1
+                overscantrim = 5
+                photflag = ${photflagvar}
+                replace = ${file.hupdate.fullname}
+                verbose = 3
+            </cmdline>
+            execname = DECam_crosstalk
+            used = file.raw, file.xtalkcoeff, file.hupdate
+            was_generated_by = file.xtalked
+        </exec_1>
+        <file>
+            <hupdate>
+                dirpat = se
+                filename = ${hupdatefile}
+                filetype = config
+                rundir = config
+            </hupdate>
+            <raw>
+                dirpat = raw
+                expnum = ${dflat_expnum}
+                filetype = raw
+                match = expnum,band
+                obstype = dome flat
+                output_fields = filename, expnum, band
+                qouttype = wcl
+                query_fields = expnum, obstype
+                query_table = exposure
+                rundir = raw
+            </raw>
+            <xtalkcoeff>
+                dirpat = se
+                filename = ${xtalkcoefffile}
+                filetype = config
+                rundir = config
+            </xtalkcoeff>
+            <xtalked>
+                dirpat = precal
+                filepat = ccdnum_band
+                filetype = xtalked_dflat
+                flabel = dflat
+                fsuffix = fits
+                ops_enddir = xtalked-dflat/${camsym}${expnum:8}
+                rundir = xtalked-dflat
+                savefiles = True
+            </xtalked>
+        </file>
+        loopobj = file.raw
+        modnamepat = ${modnamepat_exp_band}
+        wrapperloop = expnum,band
+        #MMGWHYwrapperloop = expnum
+        wrappername = genwrap.py
+    </crosstalk-dflat>
+</module>

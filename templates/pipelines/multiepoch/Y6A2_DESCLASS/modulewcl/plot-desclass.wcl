@@ -1,0 +1,47 @@
+<module>
+    <plot-desclass>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        wrapperloop = tilename
+        max_fwthreads = 1
+
+        <exec_1>
+            <cmdline>
+               label = ${tilename}
+               input = ${file.desclass.fullname}
+               output = ${file.desclass_plot.fullname}
+            </cmdline>
+            execname = desclass-plot-rmag-conc
+            cmd_hyphen =  mixed_gnu
+            used = file.desclass
+            was_generated_by = file.desclass_plot
+            ancestry = file.desclass:file.desclass_plot
+        </exec_1>
+        <file>
+            <desclass>
+                depends desclass.file.desclass
+                # what metadata to save
+                filetype = coadd_desclass
+                filepat = tile_generic
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = desclass
+            </desclass>
+            <desclass_plot>
+                filetype = coadd_desclass_plot
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = desclass-rmag-conc
+                fsuffix = pdf
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = desclass
+                rundir = desclass
+                savefiles = True
+            </desclass_plot>
+        </file>
+    </plot-desclass>
+</module>

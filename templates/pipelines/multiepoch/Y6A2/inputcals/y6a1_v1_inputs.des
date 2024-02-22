@@ -1,6 +1,6 @@
 camsym = D
 cfgver = Y6A1_v1
-meds_config_ver = Y6A1v1
+meds_config_ver = Y6A1v6
 
 fiattable=Y6A1_IMAGE_TO_TILE
 

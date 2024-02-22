@@ -1,0 +1,79 @@
+<module>
+    <skycombine-mkbleedmask>
+        wrappername = genwrap.py
+        wrapperloop = expnum,band
+        modnamepat = ${modnamepat_expband}
+        loopobj = list.mini_bleedmask_list
+
+        <list>
+            <mini_bleedmask_list>   
+                depends skycompress-mkbleedmask.file.bleedmask_mini
+                               
+                # how to name list
+                filepat = exposure
+                flabel = bleedmask-mini
+                fsuffix = list
+
+                # where to store list
+                dirpat = se
+                ops_enddir = list
+                rundir = list
+                
+                # what goes into list
+                #query_table = image
+                #filetype = bleedmask_mini
+                #query_fields = filetype,expnum,wgb.unitname,wgb.reqnum,wgb.attnum  
+                #join image.filename=wgb.filename
+                #output_fields = filename, expnum, ccdnum, band
+                divide_by = expnum,band
+
+                # description of list for wrapper
+                columns = bleedmask_mini.fullname
+            </mini_bleedmask_list>
+        </list>
+        <file>
+            <bleedmask_mini>
+
+                # what metadata to get
+                filetype = bleedmask_mini
+
+                # where to put the file
+                dirpat = se
+                rundir = mini
+
+                # whether to bring file home
+                listonly = True
+            </bleedmask_mini>
+            <bleedmask_binned_fp>
+                # what metadata to get
+                filetype = bleedmask_binned_fp
+
+                # how to name the file
+                filepat = exposure
+                flabel = bleedmask-binned-fp
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                ops_enddir = binned-fp
+                rundir = binned-fp
+
+                # whether to bring file home
+                savefiles = false
+            </bleedmask_binned_fp>
+        </file>
+        <exec_1>
+            execname = sky_combine
+            cmd_hyphen = alldouble
+            used = list.mini_bleedmask_list.bleedmask_mini
+            was_generated_by = file.bleedmask_binned_fp
+            ancestry = list.mini_bleedmask_list.bleedmask_mini:file.bleedmask_binned_fp
+            <cmdline>
+                miniskylist = ${list.mini_bleedmask_list.fullname}
+                outfilename = ${file.bleedmask_binned_fp.fullname}
+                ccdnums = ${ccdnum}
+                invalid = N30
+            </cmdline>
+        </exec_1>
+    </skycombine-mkbleedmask>
+</module>

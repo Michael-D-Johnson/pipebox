@@ -1,0 +1,49 @@
+<module>
+    <shredx-make-fofs>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        <exec_1>
+            <cmdline>
+                output = ${file.fof.fullname}
+                seg = ${file.coadd_segmap.fullname}
+            </cmdline>
+            execname = shredx-make-fofs
+            cmd_hyphen =  alldouble
+            used = file.coadd_segmap
+            was_generated_by = file.fof
+            ancestry = file.coadd_segmap:file.fof
+        </exec_1>
+        <file>
+             <coadd_segmap>
+               dirpat = mepoch
+               band = r
+               filetype = coadd_segmap
+               query_table = miscfile
+               join miscfile.pfw_attempt_id = proctag.pfw_attempt_id
+               tag = ${proctag}
+               output_fields = filename,band
+               query_fields = filetype,proctag.tag,tilename,band
+               tilename = ${unitname}
+               columns = coadd_segmap.fullname,coadd_segmap.band
+               rundir = seg
+             </coadd_segmap>
+
+            ### output files
+             <fof>
+              # what metadata to save
+                filetype = coadd_shredx_fof
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = shredx-fofslist
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = fof
+                rundir = fof
+             </fof>
+
+        </file>
+    </shredx-make-fofs>
+</module>

@@ -1,0 +1,105 @@
+chunks = 1:50
+max_chunk = 50
+
+<module>
+    <sof>
+        modnamepat = ${modnamepat_tile_chunk}
+        wrappername = genwrap.py
+        wrapperloop = chunks
+        max_fwthreads = 5 #${request_cpus}
+        <exec_1>
+            <cmdline>
+                nranges = ${max_chunk}
+                wrange = ${chunks}
+                tilename = ${tilename}
+                meds_list = ${list.meds_list.fullname}
+                bands = ${bands}
+                fofs = ${file.fof.fullname}
+                config = ${file.sofconf.fullname}
+                model-pars = ${file.shredx.fullname}
+                output = ${file.sofchunk.fullname}
+                dynamic = _flag
+            </cmdline>
+            execname = run_fitvd
+            cmd_hyphen =  alldouble
+            used = file.fof,file.sofconf, list.meds_list.meds,file.shredx
+            was_generated_by = file.sofchunk
+            ancestry = file.fof:file.sofchunk,list.meds_list.meds:file.sofchunk, file.shredx: file.sofchunk
+        </exec_1>
+        <list>
+            <meds_list>
+                # how to get list data
+                depends sof-make-fofs.list.meds_list
+
+                # how to create lists
+                columns = meds.fullname, band
+                sortkey = fullname
+
+                # what to name the list
+                filepat = tile_generic
+                flabel = meds-sof
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list/sof
+                rundir = list/sof
+            </meds_list>
+        </list>
+        <file>
+            <meds>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = meds
+            </meds>
+             <sofconf>
+                # what input file is named
+                filename = ${cfgver}_fitvd-${mof_config_ver}.yaml
+                filetype = config
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+             </sofconf>
+             <fof>
+                depends sof-make-fofs.file.fof
+                # what metadata to save
+                filetype = coadd_sof_fof
+                filepat = tile_generic
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = sof
+             </fof>
+            <shredx>
+                depends collate-shredx.file.shredx
+                # what metadata to save
+                filetype = coadd_shredx
+                filepat = tile_generic
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = shredx
+            </shredx>
+            ### output files
+
+             <sofchunk>
+                filetype = coadd_sof_chunk
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = sof-chunk-${chunks:02}
+                fsuffix = fits
+                match = chunks
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = sof
+                rundir = sof
+                savefiles = False
+            </sofchunk>
+        </file>
+    </sof>
+</module>

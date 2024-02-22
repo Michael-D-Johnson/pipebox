@@ -1,0 +1,50 @@
+<module>
+    <null-weight-pixcor>
+        wrappername = genwrap.py
+        wrapperloop = ccdnum,band
+        modnamepat = ${modnamepat_ccdnumband}
+        <file>
+            <red_pixcor>
+                # what metadata to get
+                filetype = red_pixcor
+
+                # how to name the file
+                filepat = ccdnum_band
+                flabel = pixcor
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                rundir = red/pixcor
+            </red_pixcor>
+            <red_nullweight_pixcor>
+                # what metadata to get
+                filetype = red_pixcor_nullwgt
+
+                # how to name the file
+                filepat = ccdnum_band
+                flabel = nullweight-pixcor
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                ops_enddir = red/pixcor
+                rundir = red/pixcor
+                savefiles = false
+                compress_files = true
+            </red_nullweight_pixcor>
+        </file>
+        <exec_1>
+            execname = null_weights
+            used = file.red_pixcor
+            was_generated_by = file.red_nullweight_pixcor
+            ancestry = file.red_pixcor:file.red_nullweight_pixcor
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                i = ${file.red_pixcor.fullname}
+                o = ${file.red_nullweight_pixcor.fullname}
+                null_mask = BADAMP,EDGEBLEED,STREAK,EDGE
+            </cmdline>
+        </exec_1>
+    </null-weight-pixcor>
+</module>

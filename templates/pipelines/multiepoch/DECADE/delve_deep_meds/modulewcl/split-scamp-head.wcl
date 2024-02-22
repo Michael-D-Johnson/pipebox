@@ -1,0 +1,77 @@
+<module>
+    <split-scamp-head>
+        modnamepat = ${modnamepat_tile_expband}
+        wrappername = genwrap.py
+        wrapperloop = expnum,band
+        loopobj = file.coadd_head_scamp_full
+        max_fwthreads = 3
+        <exec_1>
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                in = ${file.coadd_head_scamp_full.fullname}
+                list = ${list.coadd_head.fullname}
+            </cmdline>
+            execname = split_head.py
+            used = file.coadd_head_scamp_full
+            was_generated_by = list.coadd_head.coadd_head_scamp
+        </exec_1>
+        <list>
+            <coadd_head>
+                # how to get list data
+                depends-newname combine-se-cat.list.se-ccd-cat.catfile
+
+                # how to create list
+                divide_by = expnum, band
+                sortkey = (ccdnum, True, False)
+                columns = coadd_head_scamp.fullname
+
+                # what to name the list
+                filepat = tile_expband
+                flabel = ccdhead
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+            </coadd_head>
+        </list>
+        <file>
+            ### input files
+            <coadd_head_scamp_full>
+                # get filename and metadata from
+                depends coadd-astrorefine.list.astroref_head_full
+
+                # from pre-existing list, pick the file that matches the wrapper expnum
+                match = expnum,band
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = aux
+            </coadd_head_scamp_full>
+
+            ### output files
+            <coadd_head_scamp>
+                listonly = True
+
+                # what metadata to save
+                filetype = coadd_head_scamp
+
+                # how to name output file
+                filepat = tile_expbandccd
+                flabel = scamp
+                fsuffix = ohead
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = aux
+                rundir = aux
+            </coadd_head_scamp>
+        </file>
+    </split-scamp-head>
+
+</module>

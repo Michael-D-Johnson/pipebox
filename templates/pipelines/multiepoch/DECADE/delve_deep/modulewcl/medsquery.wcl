@@ -1,0 +1,14 @@
+<module>
+    <medsquery>
+        modnamepat = ${modnamepat_tile_generic}
+        noop = True    # only run query so can use info in other modules
+        <list>
+            <medsfiles>
+                exec = query_coadd_for_meds.py
+                args = -A ${pfw_attempt_id} -v 2 --outfile ${qoutfile} --zeropoint NONE --bkgimg --segmap --psfmodel --archive decarchive 
+
+                columns = red.mag_zero
+            </medsfiles>
+        </list>
+    </medsquery>
+</module>

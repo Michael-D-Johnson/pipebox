@@ -1,0 +1,70 @@
+<module>
+    <make-ptif>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        <exec_1>
+            execname = stiff
+            cmd_hyphen = allsingle
+            used = file.ptif_config, file.coadd, file.coadd_det
+            was_generated_by = file.coadd_ptif
+            ancestry = file.coadd:file.coadd_ptif, file.coadd_det:file.coadd_ptif
+            <cmdline>
+                _01_coadd = ${file.coadd.fullname}
+                _02_det = ${file.coadd_det.fullname}
+                c = ${file.ptif_config.fullname}   # default.stiff
+                OUTFILE_NAME = ${file.coadd_ptif.fullname}  # coadd/DES0002+0001.tiff
+                # do we need quotes here?
+                DESCRIPTION = 'PTIF file for DES tile ${tilename}'
+                COPYRIGHT = NCSA/DESDM
+                NTHREADS = ${nthreads}
+            </cmdline>
+        </exec_1>
+        <file>
+            ### inputs
+            <ptif_config>
+                # what input file is named
+                filename = ${ptif_config_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </ptif_config>
+            <coadd>
+                # how to get file data
+                depends band-assemble.file.coadd
+                ignore_multiple_error = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd>
+            <coadd_det>
+                # how to get file data
+                depends det-assemble.file.coadd_det
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_det>
+
+            ### outputs
+            <coadd_ptif>   # graphical image
+                # what metadata to save
+                filetype = coadd_ptif
+
+                # how to name output file
+                filepat = tile_generic_nolabel
+                fsuffix = ptif
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = qa
+                ops_enddir = qa
+            </coadd_ptif>
+        </file>
+    </make-ptif>
+</module>

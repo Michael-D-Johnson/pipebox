@@ -1,0 +1,77 @@
+<module>
+    <starflat>
+        wrappername = genwrap.py
+        wrapperloop = ccdnum,band
+        modnamepat = ${modnamepat_ccdnumband}
+
+        <file>
+# bleedmasked preceeds skysub. We can skip skysub by using bleedmasked as the input here
+             <red_bleedmasked>
+                filetype = red_mkbleedmask
+                filepat = ccdnum_band
+                flabel = bleedmasked
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/bleedmask
+                rundir = red/bleedmask
+            </red_bleedmasked>
+# Using skysub turns skysub "on" this is default
+            <red_skysub>
+                filetype = red_skysub
+                filepat = ccdnum_band
+                flabel = skysub
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red
+                rundir = red
+            </red_skysub>
+            <red_starflat>
+                filetype = red_starflat
+                filepat = ccdnum_band
+                flabel = starflat
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/starflat
+                rundir = red/starflat
+                savefiles = false
+                compress_files = true
+            </red_starflat>
+            <cal_starflat>
+                # metadata info
+                filetype = cal_starflat
+
+                # how to name file
+                #filename = ${starflatcampaign}_${starflatrange}_${band}_c${ccdnum:2}_${starflatrun}_starflat.fits
+                filename = Y%${starflatrange}_${band}_c${ccdnum:2}_r${starflatreq}p${starflatatt:2}_starflat.fits
+                # what goes into list?
+                query_table = calibration
+                query_fields = filename, filetype,ccdnum,band
+                output_fields = filename,ccdnum,band
+                match = ccdnum,band
+                # description of list for wrapper
+                columns = cal_starflat.fullname
+
+                # where to store file
+                dirpat = se
+                ops_enddir = starflat
+                rundir = starflat
+            </cal_starflat>
+        </file>
+        <exec_1>
+            execname = pixcorrect_im
+            cmd_hyphen = alldouble
+            used = file.red_skysub,file.cal_starflat
+            was_generated_by = file.red_starflat
+            ancestry = file.red_skysub:file.red_starflat,file.cal_starflat:file.red_starflat
+            <cmdline>
+# This is default skysub 'on' mode
+                in = ${file.red_skysub.fullname}
+# This is test skysub 'off' mode
+#                in = ${file.red_bleedmasked.fullname}
+                out = ${file.red_starflat.fullname}
+                starflat = ${file.cal_starflat.fullname}
+                null_mask = EDGE
+            </cmdline>
+        </exec_1>
+    </starflat>
+</module>

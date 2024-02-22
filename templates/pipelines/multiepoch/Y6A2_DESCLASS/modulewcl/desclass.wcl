@@ -1,0 +1,109 @@
+chunks = 1:1
+max_chunk = 1
+
+<module>
+    <desclass>
+        modnamepat = ${modnamepat_tile_chunk}
+        wrappername = genwrap.py
+        wrapperloop = chunks
+        max_fwthreads = 1
+        <exec_1>
+            <cmdline>
+                nranges = ${max_chunk}
+                wrange = ${chunks}
+                tilename = ${tilename}
+                bands = ${bands}
+                meds_list = ${list.meds_list.fullname}
+                stars = ${file.stars.fullname}
+                output = ${file.desclass.fullname}
+            </cmdline>
+            execname = run_desclass
+            cmd_hyphen =  alldouble
+            used = list.meds_list.meds,file.stars
+            was_generated_by = file.desclass
+            ancestry = list.meds_list.meds:file.desclass,file.stars:file.desclass
+        </exec_1>
+        <list>
+            <meds_list>
+               dirpat = mepoch
+               filetype = coadd_meds
+               query_table = miscfile
+               join miscfile.pfw_attempt_id = proctag.pfw_attempt_id
+               tag = ${meds_proctag}
+               band = ${bands}
+               output_fields = filename,band
+               query_fields = filetype,proctag.tag,tilename,band
+               tilename = ${unitname}
+               columns = meds.fullname, meds.band
+               #ORDER BY decode(miscfile.band,'u',0,'g',1,'r',2,'i',3,'z',4,'Y',5) asc
+               rundir = meds
+
+               filepat = tile_generic
+               flabel = meds
+               fsuffix = list
+               ops_enddir = list/meds
+               rundir = list/meds
+            </meds_list>
+        </list>
+        <file>
+            <meds>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = meds
+            </meds>
+            <desclass>
+                # what metadata to save
+                filetype = coadd_desclass
+                filepat = tile_generic
+                flabel = desclass
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = desclass
+            </desclass>
+            <stars>
+                # what input file is named
+                filename = ${cfgver}_opt-griz-hsc-stars.fits
+                filetype = config
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </stars>
+
+            ### output files
+             #<desclasschunk>
+             #   filetype = coadd_desclass_chunk
+
+                # how to name output file
+             #   filepat = tile_generic
+             #   flabel = desclass-chunk-${chunks:02}
+             #   fsuffix = fits
+             #   match = chunks
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+             #   dirpat = mepoch
+             #   ops_enddir = desclass
+             #   rundir = desclass
+             #   savefiles = True
+             #</desclasschunk>
+             <desclass>
+                filetype = coadd_desclass
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = desclass
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = desclass
+                rundir = desclass
+                savefiles = True
+            </desclass>
+        </file>
+    </desclass>
+</module>

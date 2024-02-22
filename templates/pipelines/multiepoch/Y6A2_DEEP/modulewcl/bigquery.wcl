@@ -1,0 +1,14 @@
+<module>
+    <bigquery>
+        modnamepat = ${modnamepat_tile_generic}
+        noop = True    # only run query so can use info in other modules
+        <list>
+            <allfiles>
+                exec = query_coadd_img_for_nullwgt.py
+                args = --proctag ${proctag} --tile ${tilename} --magbase=${mag_zero} --zeropoint ${zeropoint_table} --zsource ${zsource} --zversion ${zversion} --zflag ${zflag} --blacklist ${blacklist_table} --outfile ${qoutfile} --verbose 1  --archive ${home_archive} --bandlist ${band} --detbands ${det_bands} --fiat_table ${fiattable} 
+                # --zpt2 ${zpt2} --z2source ${z2source} --z2version ${z2version} --z2flag ${z2flag} 
+                columns = red.mag_zero
+            </allfiles>
+        </list>
+    </bigquery>
+</module>

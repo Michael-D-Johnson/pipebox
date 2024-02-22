@@ -1,0 +1,84 @@
+<module> 
+    <create-psfex-catalog>
+        wrappername = genwrap.py 
+        wrapperloop = ccdnum
+        modnamepat=${modnamepat_ccdnumband}
+
+        <file>
+            <sex_config>
+                filetype = config
+                filename = ${confignite}_default.sex
+                dirpat = se
+                ops_enddir = config/sex
+                rundir = config 
+            </sex_config>
+            <sex_param>
+                filetype = config 
+                filename = ${confignite}_sex.param_psfex
+                dirpat = se
+                ops_enddir = config/sex
+                rundir = config
+            </sex_param>
+            <sex_filter>
+                filetype = config
+                filename = ${confignite}_sex.conv
+                dirpat = se
+                ops_enddir = config/sex
+                rundir = config
+            </sex_filter>
+            <sex_nnw>
+                filetype = config
+                filename = ${confignite}_sex.nnw
+                dirpat = se
+                ops_enddir = config/sex
+                rundir = config
+            </sex_nnw>
+            <red_nullweight_immask>
+                # what metadata to get
+                filetype = red_immask_nullwgt
+
+                # how to name the file
+                filepat = ccdnum_band
+                flabel = nullweight-immask
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                rundir = red/immask
+            </red_nullweight_immask>
+            <psfex_cat>
+                filetype = cat_psfex
+                filepat = ccdnum_band
+                flabel = psfexcat
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = cat
+                rundir = cat
+		        savefiles = false
+            </psfex_cat>
+        </file>
+
+        <exec_1>
+            execname = sex
+            used = file.red_nullweight_immask,file.sex_config,file.sex_param,file.sex_filter,file.sex_nnw
+            was_generated_by = file.psfex_cat
+            ancestry = file.red_nullweight_immask:file.psfex_cat
+            <cmdline>
+                _01_red_nullweight_immask = ${file.red_nullweight_immask.fullname}[0]
+                FLAG_IMAGE = ${file.red_nullweight_immask.fullname}[1]
+                c = ${file.sex_config.fullname}
+                CATALOG_NAME = ${file.psfex_cat.fullname}
+                CATALOG_TYPE = FITS_LDAC
+                WEIGHT_TYPE = MAP_WEIGHT
+                WEIGHT_IMAGE = ${file.red_nullweight_immask.fullname}[2]
+                PARAMETERS_NAME = ${file.sex_param.fullname}
+                FILTER_NAME = ${file.sex_filter.fullname}
+                STARNNW_NAME = ${file.sex_nnw.fullname}
+                SATUR_LEVEL = $HEAD{${file.red_nullweight_immask.fullname},SATURATE} 
+                DETECT_MINAREA = 3
+                DETECT_THRESH = 3.0
+                WEIGHT_THRESH = 1e-9
+            </cmdline>
+        </exec_1>
+    </create-psfex-catalog>
+</module>

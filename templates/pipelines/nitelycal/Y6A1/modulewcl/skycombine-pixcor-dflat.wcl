@@ -1,0 +1,52 @@
+<module>
+    <skycombine-pixcor-dflat>
+        <exec_1>
+            ancestry = list.minilist.pixcor_mini_dflat:file.binned_fp
+            cmd_hyphen = alldouble
+            <cmdline>
+                ccdnums = ${ccdnum}
+                miniskylist = ${list.minilist.fullname}
+                outfilename = ${file.binned_fp.fullname}
+            </cmdline>
+            execname = sky_combine
+            used = list.minilist.pixcor_mini_dflat
+            was_generated_by = file.binned_fp
+        </exec_1>
+        <file>
+            <binned_fp>
+                dirpat = precal
+                filepat = exposure
+                filetype = pixcor_dflat_binned_fp
+                flabel = pixcor-dflat-binned-fp
+                fsuffix = fits
+                ops_enddir = binned-fp/${camsym}${expnum:8}
+                rundir = binned-fp
+                savefiles = True
+            </binned_fp>
+            <pixcor_mini_dflat>
+                listonly = True
+                dirpat = precal
+                rundir = pixcor-mini-dflat
+            </pixcor_mini_dflat>
+        </file>
+        <list>
+            <minilist>
+                depends = pixcorrect-dflat.file.pixcor_mini_dflat
+                divide_by = expnum,band
+
+                filepat = exposure
+                flabel = pixcor_mini_dflat
+                fsuffix = list
+
+                dirpat = precal
+                ops_enddir = pixcor-mini-dflat/${camsym}${expnum:8}
+                rundir = pixcor-mini-dflat
+                columns = pixcor_mini_dflat.fullname
+            </minilist>
+        </list>
+        loopobj = list.minilist
+        modnamepat = ${modnamepat_expband}
+        wrapperloop = expnum,band
+        wrappername = genwrap.py
+    </skycombine-pixcor-dflat>
+</module>

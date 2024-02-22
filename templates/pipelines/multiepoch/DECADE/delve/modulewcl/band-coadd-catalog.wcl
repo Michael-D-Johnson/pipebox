@@ -1,0 +1,141 @@
+<module>
+    <band-coadd-catalog>
+        max_fwthreads = ${nthreads}
+        modnamepat = ${modnamepat_tile_band}
+        wrappername = genwrap.py
+        wrapperloop = band
+        loopobj = file.coadd
+        <exec_1>
+            execname = sex
+            cmd_hyphen = allsingle
+            used = file.coadd_det, file.coadd, file.sex_config, file.sex_conv, file.sex_nnw, file.sex_param, file.det_psfex_model, file.coadd_psfex_model
+            was_generated_by = file.coadd_cat, file.coadd_segmap
+            ancestry = file.coadd_det:file.coadd_cat, file.coadd:file.coadd_cat, file.det_psfex_model:file.coadd_cat, file.coadd_psfex_model:file.coadd_cat
+            <cmdline>
+                _01_fits = ${file.coadd_det.fullname}[0],${file.coadd.fullname}[0]
+                c = ${file.sex_config.fullname}
+                CHECKIMAGE_TYPE = SEGMENTATION
+                CHECKIMAGE_NAME = ${file.coadd_segmap.fullname}
+                PARAMETERS_NAME = ${file.sex_param.fullname}
+                MAG_ZEROPOINT = ${mag_zero}
+                FILTER_NAME = ${file.sex_conv.fullname}
+                CATALOG_NAME = ${file.coadd_cat.fullname}
+                FLAG_IMAGE = ${file.coadd.fullname}[1]
+                PSF_NAME = ${file.det_psfex_model.fullname},${file.coadd_psfex_model.fullname}
+                STARNNW_NAME = ${file.sex_nnw.fullname}
+                WEIGHT_IMAGE = ${file.coadd_det.fullname}[2],${file.coadd.fullname}[2]
+                DEBLEND_MINCONT = 0.001
+                DEBLEND_NTHRESH = 64
+                DETECT_THRESH = 0.8
+                ANALYSIS_THRESH = 0.8
+            </cmdline>
+        </exec_1>
+        <file>
+            ### inputs
+            <sex_config>
+                # what input file is named
+                filename = ${sex_cat_config_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_config>
+            <sex_param>
+                # what input file is named
+                filename = ${sex_cat_param_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_param>
+            <sex_conv>
+                # what input file is named
+                filename = ${sex_cat_conv_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_conv>
+            <sex_nnw>
+                # what input file is named
+                filename = ${sex_cat_nnw_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sex_nnw>
+            <coadd>
+                # how to get file data
+                depends band-assemble.file.coadd
+                match = band
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd>
+            <coadd_psfex_model>
+                # how to get file data
+                depends band-psfex.file.psfex_model
+                match = band
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = psf
+            </coadd_psfex_model>
+            <coadd_det>
+                # how to get file data
+                depends det-assemble.file.coadd_det
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd_det>
+            <det_psfex_model>
+                # how to get file data
+                depends det-psfex.file.psfex_model
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = psf
+            </det_psfex_model>
+
+            ### outputs
+            <coadd_cat>
+                # what metadata to save
+                filetype = coadd_cat
+
+                # how to name output file
+                filepat = tile_band
+                flabel = cat
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = cat
+                rundir = cat
+            </coadd_cat>
+            <coadd_segmap>
+                # what metadata to save
+                filetype = coadd_segmap
+
+                # how to name output file
+                filepat = tile_band
+                flabel = segmap
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = seg
+                rundir = seg
+            </coadd_segmap>
+        </file>
+    </band-coadd-catalog>
+</module>

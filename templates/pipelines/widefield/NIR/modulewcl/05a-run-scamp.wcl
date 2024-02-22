@@ -1,0 +1,195 @@
+# vars for se-scamp module
+qa_file_prefix = qa/${camsym}${expnum:8}_r${reqnum}p${attnum:2}
+astr_pixerror1d = ${qa_file_prefix}_astr_pixerror1d
+astr_referror1d = ${qa_file_prefix}_astr_referror1d
+astr_referror2d = ${qa_file_prefix}_astr_referror2d
+astr_refsysmap = ${qa_file_prefix}_astr_refsysmap
+fgroups = ${qa_file_prefix}_fgroups
+distortion = ${qa_file_prefix}_distortion
+
+<module>
+    <combine-scamp-cats>
+        wrappername = genwrap.py
+        modnamepat=${modnamepat_expband}
+        <list>
+            <ccd_scamp_cat>
+                # where to get data
+                depends create-scamp-catalog.file.scamp_cat 
+    
+                # how many lists to make
+                divide_by = expnum
+
+                # name and location of list file
+                filepat = exposure
+                flabel = ccd-scamp-cat
+                fsuffix = list
+
+                dirpat = se
+                rundir = list
+                ops_enddir = list
+                columns = scamp_cat.fullname
+                sortkey = (ccdnum, True, False)
+        
+            </ccd_scamp_cat>
+        </list>
+        <file>
+            <scamp_fullcat>
+                filetype = cat_scamp_full
+                filepat = exposure
+                flabel = scampcat
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = cat
+                rundir = cat
+            </scamp_fullcat>
+            <scamp_cat>
+                filetype = cat_scamp
+                filepat = ccdnum_band
+                flabel = scampcat
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = cat
+                rundir = cat
+            </scamp_cat>
+        </file>
+        <exec_1>
+            execname = combine_cats.py
+            used = file.scamp_cat
+            was_generated_by = file.scamp_fullcat
+            ancestry = file.scamp_cat:file.scamp_fullcat
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                list = ${list.ccd_scamp_cat.fullname}
+                outcat = ${file.scamp_fullcat.fullname}
+            </cmdline>
+        </exec_1>
+    </combine-scamp-cats>
+
+    <se-scamp>
+        wrappername = genwrap.py  
+        modnamepat = ${modnamepat_expband}
+
+        <file>
+            <scamp_fullcat>
+                filetype = cat_scamp_full 
+                filepat = exposure
+                flabel = scampcat
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = cat
+                rundir = cat
+            </scamp_fullcat>
+            <scamp_cat>
+                filetype = cat_scamp
+                filepat = ccdnum_band
+                flabel = scampcat
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = cat
+                rundir = cat
+            </scamp_cat>
+            <scamp_config>
+                filetype = config
+                filename = ${scampconfigfile} 
+                dirpat = se
+                rundir = config
+            </scamp_config>
+            #<scamp_ahead>
+            #    filetype = config
+            #    filename = ${camsym}${expnum:8}_${band}_r${reqnum}p${attnum:2}_scamp.ahead
+            #    dirpat = se
+            #    ops_enddir = aux
+            #    rundir = aux
+            #</scamp_ahead>
+            <scamp_fullhead>
+                filetype = head_scamp_full
+                filepat = exposure
+                flabel = scampcat   # must match flabel for scamp_fullcat
+                fsuffix = head
+                dirpat = se
+                ops_enddir = cat
+                rundir = cat  # must match rundir for scamp_fullcat
+            </scamp_fullhead>
+            <scamp_xml>
+                filetype = xml_scamp
+                filepat = exposure
+                flabel = scamp
+                fsuffix = xml
+                dirpat = se
+                ops_enddir = qa
+                rundir = qa
+            </scamp_xml>
+            <scamp_qa>
+                filetype = qa_scamp
+                fullname = ${astr_pixerror1d}_1.ps,${astr_referror1d}_1.ps,${fgroups}_1.ps,${astr_referror2d}_1.ps,${astr_refsysmap}_1.ps,${distortion}_1.ps
+                dirpat = se
+                rundir = qa
+                ops_enddir = qa
+            </scamp_qa>
+        </file>
+
+        <exec_1>
+            execname = scamp
+            used = file.scamp_fullcat,file.scamp_config #,file.scamp_ahead
+            was_generated_by = file.scamp_fullhead,file.scamp_xml,file.scamp_qa
+            <cmdline>
+                _01_scamp_fullcat = ${file.scamp_fullcat.fullname}
+                c = ${file.scamp_config.fullname}
+                ASTREF_BAND = DEFAULT
+                MOSAIC_TYPE = LOOSE
+                PROJECTION_TYPE = TPV
+                #AHEADER_GLOBAL = ${file.scamp_ahead.fullname}
+                ASTRINSTRU_KEY = DUMMY
+                STABILITY_TYPE = INSTRUMENT
+                #AHEADER_SUFFIX = .aheadnoexist
+                ASTREFMAG_LIMITS = 1,22
+                POSITION_MAXERR = 10.0
+                ASTREF_CATALOG = GAIA-DR2
+                REF_SERVER = vizier.u-strasbg.fr,vizier.nao.ac.jp,vizier.cfa.harvard.edu
+                WRITE_XML = Y
+                FULLOUTCAT_TYPE = NONE
+                XML_NAME = ${file.scamp_xml.fullname}
+                CHECKPLOT_TYPE = astr_pixerror1d,astr_referror1d,fgroups,astr_referror2d,astr_refsysmap,distortion
+                CHECKPLOT_NAME = ${astr_pixerror1d},${astr_referror1d},${fgroups},${astr_referror2d},${astr_refsysmap},${distortion}
+                NTHREADS = 1
+                VERBOSE_TYPE = FULL 
+            </cmdline>
+        </exec_1> 
+    </se-scamp>
+    <split-scamp-head>
+        wrappername = genwrap.py  
+        modnamepat = ${modnamepat_expband}
+
+        <file>
+            <scamp_fullhead>
+                filetype = head_scamp_full
+                filepat = exposure
+                flabel = scampcat   # must match flabel for scamp_fullcat
+                fsuffix = head
+                dirpat = se
+                ops_enddir = cat
+                rundir = cat  # must match rundir for scamp_fullcat
+            </scamp_fullhead>
+            <scamp_head>
+                filetype = head_scamp
+                filepat = ccdnum_band
+                flabel = scamp
+                fsuffix = head
+                dirpat = se
+                ops_enddir = aux
+                rundir = aux
+            </scamp_head>
+        </file>
+
+        <exec_1>
+            execname = split_head.py
+            used = file.scamp_fullhead
+            was_generated_by = file.scamp_head
+            cmd_hyphen = mixed_gnu
+            <cmdline>
+                in = ${file.scamp_fullhead.fullname}
+                out = ${file.scamp_head.fullname}
+            </cmdline>
+        </exec_1> 
+    </split-scamp-head>
+</module>

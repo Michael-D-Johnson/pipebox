@@ -1,0 +1,149 @@
+<module>
+<mepoch-ingest-no-mangle>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        <exec_1>
+            execname = mepoch_ingest.py
+            cmd_hyphen = mixed_gnu
+            used = list.lcoadd_cat.coadd_cat, file.det_cat, file.ebv, list.lxcorr.xcorr,file.healpix, list.lwavg_band.cat_wavg, list.lwavg_oclink.cat_wavg_oclink
+            <cmdline>
+                detcat = ${file.det_cat.fullname}
+                bandcat_list = ${list.lcoadd_cat.fullname}
+                healpix = ${file.healpix.fullname}
+                wavg_list = ${list.lwavg_band.fullname}
+                wavg_oclink_list = ${list.lwavg_oclink.fullname}
+                extinct = ${file.ebv.fullname}
+                extinct_band_list = ${list.lxcorr.fullname}
+            </cmdline>
+        </exec_1>
+        <list>
+            <lcoadd_cat>
+                # how to get list data
+                depends band-coadd-catalog.file.coadd_cat
+
+                # how to create lists
+                columns = coadd_cat.fullname
+                sortkey = (band, False, False)
+
+                # what to name the list
+                filepat = tile_generic
+                flabel = meingest-coadd-cat
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+            </lcoadd_cat>
+            <lwavg_band>
+                # how to get list data
+                depends wavg.file.cat_wavg
+
+                # how to create lists
+                columns = cat_wavg.fullname
+                sortkey = (band, False, False)
+
+                # what to name the list
+                filepat = tile_generic
+                flabel = meingest-wavg-band
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+            </lwavg_band>
+            <lwavg_oclink>
+                # how to get list data
+                depends wavg.file.cat_wavg_oclink
+
+                # how to create lists
+                columns = cat_wavg_oclink.fullname
+                sortkey = (band, False, False)
+
+                # what to name the list
+                filepat = tile_generic
+                flabel = meingest-wavg-oclink
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+            </lwavg_oclink>
+            <lxcorr>
+                # how to get list data
+                depends extinction.file.xcorr
+
+                # how to create lists
+                columns = xcorr.fullname
+                sortkey = (band, False, False)
+
+                # what to name the list
+                filepat = tile_generic
+                flabel = meingest-xcorr
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+            </lxcorr>
+        </list>
+        <file>
+            ### inputs
+            <coadd_cat>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = cat
+            </coadd_cat>
+            <det_cat>
+                # how to get file data
+                depends det-catalog.file.det_cat
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = cat
+            </det_cat>
+            <cat_wavg>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = wavg
+            </cat_wavg>
+            <cat_wavg_oclink>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = wavg
+            </cat_wavg_oclink>
+            <ebv>
+                # how to get file data
+                depends extinction.file.ebv
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = cat
+            </ebv>
+            <xcorr>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = cat
+            </xcorr>
+            <healpix>
+                # how to get file data
+                depends healpix.file.hpix
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = cat
+            </healpix>
+        </file>
+    </mepoch-ingest-no-mangle>
+</module>

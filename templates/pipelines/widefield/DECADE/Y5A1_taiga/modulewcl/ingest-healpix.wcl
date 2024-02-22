@@ -1,0 +1,28 @@
+<module>
+<ingest-healpix>
+        modnamepat = ${modnamepat_ccdnumband}
+        wrappername = genwrap.py
+        wrapperloop = ccdnum,band
+        <exec_1>
+            cmd_hyphen = mixed_gnu
+            execname = datafile_ingest.py
+            used = file.red_hpix
+            <cmdline>
+                filename = ${file.red_hpix.fullname}
+                filetype = red_hpix
+            </cmdline>
+        </exec_1>
+        <file>
+            ### inputs
+            <red_hpix>
+                # how to get file data
+                depends healpix.file.hpix
+
+                # where it lives in jobroot
+                dirpat = se
+                rundir = hpix
+                match = ccdnum,band
+            </red_hpix>
+        </file>
+    </ingest-healpix>
+</module>

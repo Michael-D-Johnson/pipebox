@@ -1,0 +1,56 @@
+<module>
+    <crosstalk-sci>
+        wrappername = genwrap.py
+        modnamepat=${modnamepat_expband}
+        loopobj = file.raw
+
+        <file>
+            <raw>
+	            filetype = raw
+                filename = DECam_${expnum:8}.fits.fz
+                dirpat = raw
+                rundir = raw
+            </raw>
+            <xtalkcoeff>
+                filetype = config
+                filename = ${xtalkcoefffile}
+                dirpat = se
+                rundir = config
+            </xtalkcoeff>
+            <red_xtalked>
+                filetype = xtalked_sci
+                filepat = ccdnum_band
+        		flabel = scix
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/xtalk
+                rundir = red/xtalk
+                savefiles = false
+            </red_xtalked>
+	        <hupdate>
+        		filetype = config
+                filename = ${hupdatefile}
+                dirpat = se
+                rundir = config
+	        </hupdate>
+        </file>
+        <exec_1>
+            execname = DECam_crosstalk
+            used = file.raw, file.xtalkcoeff,file.hupdate
+            was_generated_by = file.red_xtalked
+            ancestry = file.raw:file.red_xtalked, file.xtalkcoeff:file.red_xtalked,file.hupdate:file.red_xtalked
+            <cmdline>
+                _01_raw = ${file.raw.fullname}
+                _02_red_xtalked = red/xtalk/${camsym}${expnum:8}_${band}_c%02d_r${reqnum}p${attnum:2}_scix.fits 
+                crosstalk = ${file.xtalkcoeff.fullname}
+                overscansample = 1
+                overscanfunction = 0
+                overscantrim = 5
+		        replace = ${file.hupdate.fullname}
+                verbose = 3
+                photflag = ${photflagvar}
+		        ccdlist = ${ccdnum}
+            </cmdline>
+        </exec_1>
+    </crosstalk-sci>
+</module>

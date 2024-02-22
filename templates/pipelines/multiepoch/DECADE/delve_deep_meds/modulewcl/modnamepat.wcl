@@ -1,0 +1,6 @@
+modnamepat_tile_generic = ${tilename}_r${reqnum}p${attnum:2}_${modulename}
+modnamepat_tile_band = ${tilename}_r${reqnum}p${attnum:2}_${band}_${modulename}
+modnamepat_tile_ccd = ${tilename}_r${reqnum}p${attnum:2}_${ccdnum:2}_${modulename}
+modnamepat_tile_bandccd = ${tilename}_r${reqnum}p${attnum:2}_${band}_c${ccdnum:2}_${modulename}
+modnamepat_tile_expband = ${tilename}_r${reqnum}p${attnum:2}_${camsym}${expnum:8}_${band}_${modulename}
+modnamepat_tile_expbandccd = ${tilename}_r${reqnum}p${attnum:2}_${camsym}${expnum:8}_${band}_c${ccdnum:2}_${modulename}

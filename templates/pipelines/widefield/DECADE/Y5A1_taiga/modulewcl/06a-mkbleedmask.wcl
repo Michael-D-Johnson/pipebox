@@ -1,0 +1,76 @@
+<module>
+    <mkbleedmask>
+        wrappername = genwrap.py
+        wrapperloop = ccdnum
+        modnamepat=${modnamepat_ccdnumband}
+
+        <file>
+            <red_wcs>
+                filetype = red_wcs
+                filepat = ccdnum_band
+                flabel = wcs
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/wcs
+                rundir = red/wcs
+            </red_wcs>
+            <cat_satstar>
+                filetype = cat_satstar
+                filepat = ccdnum_band
+                flabel = satstar
+                fsuffix = fits
+                dirpat = se
+		        optional = true
+                ops_enddir = aux
+                rundir = aux
+            </cat_satstar>
+            <cat_trailbox>
+                filetype = cat_trailbox
+                filepat = ccdnum_band
+                flabel = trailbox
+                fsuffix = fits
+                dirpat = se
+        		optional = true
+                ops_enddir = aux
+                rundir = aux
+            </cat_trailbox>
+            <red_bleedmasked>
+                filetype = red_mkbleedmask
+                filepat = ccdnum_band
+                flabel = bleedmasked    
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/bleedmask
+                rundir = red/bleedmask
+                savefiles = false
+                compress_files = true
+            </red_bleedmasked>
+        </file>
+
+        <exec_1>
+            execname = mkbleedmask
+            used = file.red_wcs
+            was_generated_by = file.cat_satstar,file.cat_trailbox,file.red_bleedmasked
+            ancestry = file.red_wcs:file.red_bleedmasked,file.red_wcs:file.cat_satstar,file.red_wcs:file.cat_trailbox
+            <cmdline>
+                _01_red_wcs = ${file.red_wcs.fullname}
+                _02_red_bleedmasked = ${file.red_bleedmasked.fullname}
+		        m = _flag
+        		b = 5
+		        f = 1.0
+        		l = 7
+		        n = 7
+        		r = 5
+                s = 100
+                t = 20
+                v = 3
+		        w = 2
+        		y = 1.0
+		        E = 6
+        		L = 30
+                o = ${file.cat_satstar.fullname}
+                x = ${file.cat_trailbox.fullname}
+            </cmdline>
+        </exec_1>
+    </mkbleedmask>
+</module>

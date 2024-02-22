@@ -3,12 +3,12 @@
 from pipebox import pipeline
 
 # initialize and get options
-print "Collecting data..."
+print("Collecting data...")
 widefield = pipeline.WideField()
 args = widefield.args
 
 # create JIRA ticket per nite found (default)
-print "Creating JIRA ticket..."
+print("Creating JIRA ticket...")
 if args.exptag:
     widefield.ticket(args,groupby='tag')
 elif args.auto:
@@ -24,5 +24,5 @@ else:
 
 # write submit files and submit if necessary
 # columns should only be values that change per submit (groupby)
-print "Creating templates and submitting (if specified)..."
-widefield.make_templates(columns=['nite','expnum','band'],groupby='expnum')
+print("Creating templates and submitting (if specified)...")
+widefield.make_templates(columns=['nite','expnum','band','filename'],groupby='expnum')

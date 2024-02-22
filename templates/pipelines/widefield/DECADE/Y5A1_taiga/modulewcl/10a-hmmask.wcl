@@ -1,0 +1,84 @@
+<module>
+    <hmmask>
+        wrappername = genwrap.py
+        wrapperloop = ccdnum
+        modnamepat=${modnamepat_ccdnumband}
+        <file>
+            <red_starflat>
+                filetype = red_mkbleedmask
+                filepat = ccdnum_band
+                flabel = starflat    
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/starflat
+                rundir = red/starflat
+            </red_starflat>
+     	    <red_hmmask_bkg>
+                filetype = red_bkg_hmmask
+                filepat = ccdnum_band
+                flabel = hmmask-bkg
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = bkg/hmmask
+                rundir = bkg/hmmask
+            </red_hmmask_bkg>
+            <red_hmmasked>
+                filetype = red_hmmask
+                filepat = ccdnum_band
+                flabel = hmmasked
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/immask
+                rundir = red/immask
+                savefiles = false
+                compress_files = true
+            </red_hmmasked>
+    	    <cat_hstreak>
+                filetype = cat_hstreak
+        		filename = D${expnum:8}_${band}_c${ccdnum:2}_r${reqnum}p${attnum:2}_hstreak.fits
+                filepat = ccdnum_band
+                dirpat = se
+                ops_enddir = aux
+                optional = true
+                rundir = aux
+                savefiles = false
+            </cat_hstreak>
+    	    <cat_gal>
+                filetype = config
+        		filename = ${confignite}_hyperleda-galaxy-mask_v2.csv
+                dirpat = se
+                ops_enddir = config/hmmask
+                rundir = config
+            </cat_gal>
+
+        </file>
+
+        <exec_1>
+            execname = immask
+     	    cmd_hyphen = alldouble
+            used = file.red_starflat,file.red_hmmask_bkg,file.cat_gal
+            was_generated_by = file.red_hmmasked,file.cat_hstreak
+            ancestry = file.red_starflat:file.red_hmmasked, file.red_hmmask_bkg:file.red_hmmasked, file.red_starflat:file.cat_hstreak,file.cat_gal:file.red_hmmasked
+            <cmdline>
+                _01_hmmask_mode = all
+                _02_red_starflat = ${file.red_starflat.fullname}
+    	        _03_red_hmmasked = ${file.red_hmmasked.fullname}
+	        streaksfile = ${file.cat_hstreak.fullname}
+	        write_streaks = _flag
+    	        bkgfile = ${file.red_hmmask_bkg.fullname}
+    	        minSigma = 6.0
+                nsig_mask = 12
+                nsig_merge = 12
+                nsig_sky = 1.5
+                max_angle = 75
+                max_width = 300
+	        nsig_detect = 18
+                min_fill = 0.33
+                min_DN = 600
+                nGrowCR = 1
+                galfile = ${file.cat_gal.fullname}
+                maskbits = 9215
+            </cmdline>
+        </exec_1>
+    </hmmask>
+</module>

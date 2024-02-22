@@ -1,0 +1,48 @@
+<module>
+    <skycompress-mkbleedmask>
+        wrappername = genwrap.py
+        wrapperloop = ccdnum, band
+        modnamepat = ${modnamepat_ccdnumband}
+        loopobj = file.red_bleedmasked       
+        <file>
+            <red_bleedmasked>
+                filetype = red_mkbleedmask
+                filepat = ccdnum_band
+                flabel = bleedmasked
+                fsuffix = fits
+                dirpat = se
+                ops_enddir = red/bleedmask
+                rundir = red/bleedmask
+            </red_bleedmasked>
+            <bleedmask_mini>
+                # what metadata to get
+                filetype = bleedmask_mini
+
+                # how to name the file
+                filepat = ccdnum_band
+                flabel = bleedmask-mini
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                ops_enddir = mini
+                rundir = mini
+
+                # whether to bring file home
+                savefiles = false
+            </bleedmask_mini>
+        </file>
+        <exec_1>
+            execname = sky_compress
+            cmd_hyphen = mixed_gnu
+            used = file.red_bleedmasked
+            was_generated_by = file.bleedmask_mini
+            ancestry = file.red_bleedmasked:file.bleedmask_mini
+            <cmdline>
+                in = ${file.red_bleedmasked.fullname}
+                skyfilename =  ${file.bleedmask_mini.fullname}
+                blocksize = 128
+            </cmdline>
+        </exec_1>
+    </skycompress-mkbleedmask>
+</module>

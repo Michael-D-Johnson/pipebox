@@ -1,0 +1,77 @@
+<module>
+    <sof-make-fofs>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+
+        <exec_1>
+            <cmdline>
+                conf = ${file.sofconf.fullname}
+                output = ${file.fof.fullname}
+                meds_list = ${list.meds_list.fullname}
+                bands = i
+                plot = dummy.png
+            </cmdline>
+            execname = run_fitvd-make-fofs
+            cmd_hyphen =  alldouble
+            used = file.sofconf,list.meds_list.meds
+            was_generated_by = file.fof
+            ancestry = list.meds_list.meds:file.fof
+        </exec_1>
+        <list>
+            <meds_list>
+               dirpat = mepoch
+               filetype = coadd_meds
+               query_table = miscfile
+               join miscfile.pfw_attempt_id = proctag.pfw_attempt_id
+               tag = ${meds_proctag}
+               output_fields = filename,band
+               query_fields = filetype,proctag.tag,tilename
+               tilename = ${unitname}
+               columns = meds.fullname, meds.band
+               rundir = meds
+
+               filepat = tile_generic
+               flabel = meds
+               fsuffix = list
+               ops_enddir = list/meds
+               rundir = list/meds
+            </meds_list>         
+        </list>
+        <file>
+            <sofconf>
+                # what input file is named
+                filename = ${cfgver}_fitvd-${mof_config_ver}.yaml
+                filetype = config
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </sofconf>
+            <meds>
+                listonly = True
+                filetype = coadd_meds
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = meds
+             </meds>
+
+            ### output files
+             <fof>
+              # what metadata to save
+                filetype = coadd_sof_fof
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = sof-fofslist
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = sof
+                rundir = sof
+             </fof>
+
+        </file>
+    </sof-make-fofs>
+</module>

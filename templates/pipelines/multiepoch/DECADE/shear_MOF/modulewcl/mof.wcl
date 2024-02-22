@@ -1,0 +1,94 @@
+chunks = 1:500
+max_chunk = 500
+
+<module>
+    <mof>
+        modnamepat = ${modnamepat_tile_chunk}
+        wrappername = genwrap.py
+        wrapperloop = chunks
+        max_fwthreads = ${request_cpus}
+        <exec_1>
+            <cmdline>
+                nranges = ${max_chunk}
+                wrange = ${chunks}
+                tilename = ${tilename}
+                meds_list = ${list.meds_list.fullname}
+                bands = ${bands}
+                fofs = ${file.fof.fullname}
+                config = ${file.mofconf.fullname}
+                output = ${file.mofchunk.fullname}
+                dynamic = _flag
+            </cmdline>
+            execname = run_fitvd
+            cmd_hyphen =  alldouble
+            used = file.fof,file.mofconf, list.meds_list.meds
+            was_generated_by = file.mofchunk
+            ancestry = file.fof:file.mofchunk,list.meds_list.meds:file.mofchunk
+        </exec_1>
+        <list>
+            <meds_list>
+                # how to get list data
+                depends query-coadd-for-mof.list.meds_list
+
+                # how to create lists
+                columns = meds.fullname, band
+                sortkey = fullname
+
+                # what to name the list
+                filepat = tile_generic
+                flabel = meds-mof
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list/mof
+                rundir = list/mof
+            </meds_list>
+        </list>
+        <file>
+            <meds>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = meds
+            </meds>
+             <mofconf>
+                # what input file is named
+                filename = ${cfgver}_fitvd-${mof_config_ver}.yaml
+                filetype = config
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+             </mofconf>
+             <fof>
+                depends query-coadd-for-mof.file.fof
+                # what metadata to save
+                filetype = coadd_mof_fof
+                filepat = tile_generic
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = mof
+             </fof>
+            ### output files
+
+             <mofchunk>
+                filetype = coadd_mof_chunk
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = mof-chunk-${chunks:02}
+                fsuffix = fits
+                match = chunks
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = mof
+                rundir = mof
+                savefiles = False
+            </mofchunk>
+        </file>
+    </mof>
+</module>

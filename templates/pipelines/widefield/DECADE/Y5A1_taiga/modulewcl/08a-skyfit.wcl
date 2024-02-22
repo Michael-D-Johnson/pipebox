@@ -1,0 +1,69 @@
+<module>
+    <skyfit>
+        wrappername = genwrap.py
+        wrapperloop = expnum,band
+        modnamepat = ${modnamepat_expband}
+        <file>
+            <bleedmask_binned_fp>
+                # what metadata to get
+                filetype = bleedmask_binned_fp
+
+                # how to name the file
+                filepat = exposure
+                flabel = bleedmask-binned-fp
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                rundir = binned-fp
+            </bleedmask_binned_fp>
+            <skyfit_binned_fp>
+                # what metadata to get
+                filetype = skyfit_binned_fp
+
+                # how to name the file
+                filepat = exposure
+                flabel = skyfit-binned-fp
+                fsuffix = fits
+
+                # where to put the file
+                dirpat = se
+                ops_enddir = binned-fp
+                rundir = binned-fp
+
+                # whether to bring file home
+                savefiles = True 
+            </skyfit_binned_fp>
+            <cal_skypca_binned_fp>
+                filetype = cal_skypca_binned_fp
+
+                # how to name the file
+                filename = %${skypcarange}_${band}_r${skypcareq}p${skypcaatt:2}_skypca-binned-fp.fits
+                # what goes into list?
+                query_table = calibration
+                query_fields = filename, filetype,band
+                output_fields = filename
+                #divide_by = filename
+                # description of list for wrapper
+                columns = cal_skypca_binned_fp.fullname
+                
+                # where to put the file
+                dirpat = se
+                ops_enddir = binned-fp
+                rundir = binned-fp
+            </cal_skypca_binned_fp>
+        </file>
+        <exec_1>
+            execname = sky_fit
+            cmd_hyphen = alldouble
+            used = file.bleedmask_binned_fp,file.cal_skypca_binned_fp
+            was_generated_by = file.skyfit_binned_fp
+            ancestry = file.bleedmask_binned_fp:file.skyfit_binned_fp
+            <cmdline>
+                infilename = ${file.bleedmask_binned_fp.fullname}
+                pcfilename = ${file.cal_skypca_binned_fp.fullname}
+                outfilename = ${file.skyfit_binned_fp.fullname} 
+            </cmdline>
+        </exec_1>
+    </skyfit>
+</module>

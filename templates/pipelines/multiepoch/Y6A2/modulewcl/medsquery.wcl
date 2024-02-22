@@ -5,7 +5,7 @@
         <list>
             <medsfiles>
                 exec = query_coadd_for_meds.py
-                args = -A ${pfw_attempt_id} -v 2 --outfile ${qoutfile} --zeropoint NONE --bkgimg --segmap --psfmodel
+                args = -A ${pfw_attempt_id} -v 2 --outfile ${qoutfile} --zeropoint None --bkgimg --segmap --psfmodel --usepiff --pifftag Y6A1_PIFF --bandlist ${bands}
 
                 columns = red.mag_zero
             </medsfiles>

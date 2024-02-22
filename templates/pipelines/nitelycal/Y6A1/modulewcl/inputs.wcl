@@ -1,0 +1,7 @@
+### Mostly Constant ###
+camsym = D 
+photflagvar = 1    
+confignite = 20191211
+xtalkcoefffile = DECam_20130606.xtalk 
+pupilnite = null
+refcampaign = Y2T1

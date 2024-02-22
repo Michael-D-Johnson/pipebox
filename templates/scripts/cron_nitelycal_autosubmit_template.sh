@@ -20,7 +20,6 @@ source /work/apps/RHEL6/dist/eups/desdm_eups_setup.sh
 setup --nolocks {{ args.eups_stack[0] }} {{ args.eups_stack[1] }}
 setup --nolocks jirapython 
 setup --nolocks pandas
-setup --nolocks opstoolkit
 setup -r {{ args.pipebox_dir }}
 
 export PIPEBOX_WORK={{ args.pipebox_work }}

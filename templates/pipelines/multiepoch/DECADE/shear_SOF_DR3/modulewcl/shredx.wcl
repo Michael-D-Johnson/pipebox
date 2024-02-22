@@ -1,0 +1,183 @@
+chunks = 1:500
+max_chunk = 500
+<module>
+    <shredx>
+        modnamepat = ${modnamepat_tile_chunk}
+        wrappername = genwrap.py
+        wrapperloop = chunks
+        max_fwthreads = ${request_cpus}
+        <exec_1>
+            <cmdline>
+                nranges = ${max_chunk}
+                wrange = ${chunks}
+                tilename = ${tilename}
+                bands = ${bands}
+                fofs = ${file.fof.fullname}
+                config = ${file.shredxconf.fullname}
+                outfile = ${file.shredxchunk.fullname}
+                seg = ${file.coadd_segmap.fullname}
+                cat = ${file.coadd_cat.fullname}
+                coadd_ima_list = ${list.coadd_image_list.fullname}
+                coadd_psf_list = ${list.coadd_psf_list.fullname}
+                ids = ${file.coadd_obj_map.fullname} #output
+                db_section = ${target_des_db_section}
+                coadd_object_tablename = ${name_of_save_table}
+            </cmdline>
+            execname = run_shredx
+            cmd_hyphen =  alldouble
+            used = file.fof,file.shredxconf,file.coadd_segmap,file.coadd_cat,list.coadd_image_list.coadd,list.coadd_psf_list.coadd_psfex_model 
+            was_generated_by = file.shredxchunk, file.coadd_obj_map
+            ancestry = file.fof:file.shredxchunk,list.coadd_image_list.coadd:file.shredxchunk,file.fof:file.shredxchunk,list.coadd_psf_list.coadd_psfex_model:file.shredxchunk
+
+
+        </exec_1>
+        <list>
+            <coadd_image_list>
+                filetype = coadd
+                query_table = coadd
+                join coadd.pfw_attempt_id = proctag.pfw_attempt_id
+                tag = ${proctag}
+                output_fields = filename,band
+                query_fields = filetype,proctag.tag,tilename
+                tilename = ${unitname}
+
+                # how to create lists
+                columns = coadd.fullname, band
+                sortkey = fullname
+
+                # what to name the list
+                filepat = tile_generic
+                flabel = coadd_image
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list/shredx
+                rundir = list/shredx
+              
+            </coadd_image_list>
+          <coadd_psf_list>
+                filetype = coadd_psfex_model
+                query_table = miscfile 
+                join miscfile.pfw_attempt_id = proctag.pfw_attempt_id
+                tag = ${proctag}
+                output_fields = filename,band
+                query_fields = filetype,proctag.tag,tilename
+                tilename = ${unitname}
+                
+                # how to create lists
+                columns = coadd_psfex_model.fullname, band
+                sortkey = fullname
+
+                # what to name the list
+                filepat = tile_generic
+                flabel = psfcat
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list/shredx
+                rundir = list/shredx
+
+            </coadd_psf_list>
+     </list>
+        <file>
+            <coadd>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = coadd
+            </coadd>
+             <shredxconf>
+                # what input file is named
+                filename = ${cfgver}_shredx-${shredx_config_ver}.yaml
+                filetype = config
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+             </shredxconf>
+
+            <coadd_psfex_model>
+                listonly = True
+                dirpat = mepoch
+                rundir = psf
+            </coadd_psfex_model>
+
+             <fof>
+                depends shredx-make-fofs.file.fof
+                # what metadata to save
+                filetype = coadd_shredx_fof
+                filepat = tile_generic
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = fof
+             </fof>
+
+             <coadd_segmap>
+                depends shredx-make-fofs.file.coadd_segmap
+                # what metadata to save
+                filetype = coadd_segmap
+                filepat = tile_band
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = seg
+             </coadd_segmap>
+
+             <coadd_cat>
+                # what metadata to save
+                filepat = tile_band
+
+                filetype = coadd_cat
+                query_table = catalog
+                join catalog.pfw_attempt_id = proctag.pfw_attempt_id
+                tag = ${proctag}
+                band = r
+                output_fields = filename,band
+                query_fields = filetype,proctag.tag,tilename,band
+                tilename = ${unitname}
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = cat
+             </coadd_cat>
+
+
+
+            ### output files
+
+             <shredxchunk>
+                filetype = coadd_shredx_chunk
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = shredx-chunk-${chunks:02}
+                fsuffix = fits
+                match = chunks
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = shredx
+                rundir = shredx
+                savefiles = True
+            </shredxchunk>
+
+             <coadd_obj_map>
+                filetype = coadd_obj_map
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = idmap
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = shredx
+                rundir = shredx
+            </coadd_obj_map>
+        </file>
+    </shredx>
+</module>

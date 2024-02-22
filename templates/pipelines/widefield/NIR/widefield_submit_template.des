@@ -1,0 +1,79 @@
+{% extends "supportwcl/generic_submit.des" %}
+{% block content %}
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/modnamepat.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/01-nir_rehab.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/03-null-weight-pixcor.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/04a-create-scamp-catalog.wcl>>
+#<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/04b-split-scamp-ahead.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/05a-run-scamp.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/05b-update-scamp-headers.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/11-rowinterp-nullweight-immask.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/12a-create-psfex-cat.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/12b-run-psfex.wcl>>
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{ args.campaign }}/modulewcl/13a-create-finalcut-catalog.wcl>>
+
+{% if not args.labels %}
+label = ${nite} {% endif %}
+
+expnum = {{ args.expnum }}
+band = {{ args.band }}
+nite = {{ args.nite }}
+desepoch = {{args.epoch_name}}
+nirfilename = {{args.nirfilename}}
+
+{% if args.calnite %}
+calnite = {{ args.calnite }} 
+{% endif %}
+{% if args.calrun %}
+calrun = {{ args.calrun }} {% endif %}
+
+basket = ${nite}
+{% if args.ccdnum %}
+ccdnum = {{ args.ccdnum }}
+{% else %}
+ccdnum = {{args.cal_df[(args.cal_df.filetype=='None')].ccdnum.values[0]}}
+{% endif %}
+unitname = ${camsym}${expnum:8}
+{% if args.rundir %}
+ops_run_dir = {{ args.rundir }}
+{% else %}
+ops_run_dir = ${project}/${pipeline}/${campaign}/${basket}-r${reqnum}/${unitname}/p${attnum:2} 
+{% endif %}
+submit_run_dir = /home/madamow/submit/${ops_run_dir}
+save_run_vals = nite, camsym, band, expnum, jira_id
+
+GROUP_SUBMIT_ID = 1
+
+blocklist = se
+
+<block>
+   <se>
+        modulelist = nir-rehab,null-weight-pixcor,create-scamp-catalog,combine-scamp-cats,se-scamp,split-scamp-head,update-scamp-headers,rowinterp-nullweight-immask,create-psfex-catalog,run-psfex,create-finalcut-catalog
+    </se>    
+</block>
+
+### Input Calibrations ###
+hupdatefile = ${confignite}_{{args.cal_df[(args.cal_df.filetype=='config')].filepat.values[0]}}
+lintablefile = {{args.cal_df[(args.cal_df.filetype=='cal_lintable')].filename.values[0]}}
+bffile = {{args.cal_df[(args.cal_df.filetype=='cal_bf')].filename.values[0]}}
+starflatrange = {{args.cal_df[(args.cal_df.filetype=='cal_starflat')].unitname.values[0]}}
+starflatreq = {{args.cal_df[(args.cal_df.filetype=='cal_starflat')].reqnum.values[0]}}
+starflatatt = {{args.cal_df[(args.cal_df.filetype=='cal_starflat')].attnum.values[0]}}
+skypcarange = {{args.cal_df[(args.cal_df.filetype=='cal_skypca_tmpl')].unitname.values[0]}}
+skypcareq = {{args.cal_df[(args.cal_df.filetype=='cal_skypca_tmpl')].reqnum.values[0]}}
+skypcaatt = {{args.cal_df[(args.cal_df.filetype=='cal_skypca_tmpl')].attnum.values[0]}} 
+bpmnite = {{args.cal_df[(args.cal_df.filetype=='cal_bpm')].unitname.values[0]}}
+bpmreq = {{args.cal_df[(args.cal_df.filetype=='cal_bpm')].reqnum.values[0]}}
+bpmatt = {{args.cal_df[(args.cal_df.filetype=='cal_bpm')].attnum.values[0]}}
+calnite = {{args.cal_df[(args.cal_df.filetype=='cal_biascor')].unitname.values[0]}}
+calreq = {{args.cal_df[(args.cal_df.filetype=='cal_biascor')].reqnum.values[0]}}
+calatt = {{args.cal_df[(args.cal_df.filetype=='cal_biascor')].attnum.values[0]}}
+
+{% if args.inputcals_file %}
+<<include {{args.inputcals_file}}>>
+{% else %}
+<<include {{ args.pipebox_dir }}/templates/pipelines/widefield/{{args.campaign}}/modulewcl/inputs.wcl>>
+{% endif %}
+
+
+{% endblock %}

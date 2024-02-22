@@ -1,0 +1,144 @@
+astr_pixerror1d = ${qa_file_prefix}_astr_pixerror1d
+astr_referror1d = ${qa_file_prefix}_astr_referror1d
+astr_referror2d = ${qa_file_prefix}_astr_referror2d
+astr_refsysmap = ${qa_file_prefix}_astr_refsysmap
+distortion = ${qa_file_prefix}_distortion
+fgroups = ${qa_file_prefix}_fgroups
+qa_file_prefix = qa/${tilename}_r${reqnum}p${attnum:2}
+
+<module>
+<coadd-astrorefine>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        <exec_1>
+            <cmdline>
+                _01_scamp_fullcat = @${list.coadd_fullcat.fullname}
+                c = ${file.scamp_config.fullname}
+                HEADER_NAME = @${list.astroref_head_full.fullname}
+                XML_NAME = ${file.scamp_xml.fullname}
+                CHECKPLOT_TYPE = astr_referror1d,astr_referror2d,fgroups
+                CHECKPLOT_NAME = ${astr_referror1d},${astr_referror2d},${fgroups}
+                NTHREADS = ${nthreads}
+                ASTREF_CATALOG = GAIA-DR2
+                MOSAIC_TYPE = ${mosaictype}
+                ASTR_FLAGSMASK = 0x00fc
+                FLAGS_MASK = 0x00fc
+            </cmdline>
+            execname = scamp
+            used = list.coadd_fullcat.coadd_scamp_fullcat, file.scamp_config
+            was_generated_by = list.astroref_head_full.coadd_head_scamp_full, file.scamp_xml, file.scamp_qa
+            ancestry = list.coadd_fullcat.coadd_scamp_fullcat:list.astroref_head_full.coadd_head_scamp_full
+        </exec_1>
+        <list>
+            <coadd_fullcat>
+                # how to get list data
+                depends = combine-se-cat.file.coadd_scamp_fullcat
+
+                # how to create list
+                sortkey = (expnum, True, False)
+                columns = coadd_scamp_fullcat.fullname
+
+                # what to name the list
+                filepat = tile_generic
+                flabel = fullcat
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+            </coadd_fullcat>
+            <astroref_head_full>
+                # how to get list data
+                depends-newname = coadd-astrorefine.list.coadd_fullcat
+
+                # how to create list
+                sortkey = (expnum, True, False)
+                columns = coadd_head_scamp_full.fullname
+
+                # what to name the list
+                filepat = tile_generic
+                flabel = fullhead
+                fsuffix = list
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = list
+                rundir = list
+            </astroref_head_full>
+        </list>
+        <file>
+            ### input files
+            <coadd_scamp_fullcat>
+                listonly = True
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = cat
+            </coadd_scamp_fullcat>
+            <scamp_config>
+                # what input file is named
+                filename = ${scamp_config_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+</scamp_config>
+            ### output files
+            <scamp_qa>
+                # what metadata to save
+                filetype = coadd_qa_scamp
+
+                # how to name output file
+                fullname = ${astr_referror1d}_1.ps,${astr_referror2d}_1.ps,${fgroups}_1.ps
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = qa
+                rundir = qa
+            </scamp_qa>
+            <scamp_xml>
+                # what metadata to save
+                filetype = coadd_xml_scamp
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = scamp
+                fsuffix = xml
+
+                # whether to save or compress
+                savefiles = true
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = qa
+                rundir = qa
+            </scamp_xml>
+            <coadd_head_scamp_full>
+                listonly = True
+
+                # what metadata to save
+                filetype = coadd_head_scamp_full
+
+                # how to name output file
+                filepat = tile_expband
+                flabel = scamp
+                fsuffix = head
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = aux
+                rundir = aux
+            </coadd_head_scamp_full>
+        </file>
+    </coadd-astrorefine>
+</module>

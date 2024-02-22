@@ -1,0 +1,55 @@
+<module>
+    <mkbiascor>
+        <exec_1>
+            ancestry = list.inlist.xtalked:file.biascor
+            <cmdline>
+                _01_listbiasx = ${list.inlist.fullname}
+                _02_biascor = ${file.biascor.fullname}
+                avsigclip = 5.0
+                variancetype = WEIGHT
+                verbose = 3
+            </cmdline>
+            execname = mkbiascor
+            used = list.inlist.xtalked
+            was_generated_by = file.biascor
+        </exec_1>
+        <file>
+            <biascor>
+                dirpat = precal
+                filepat = nite_ccdnum_noband
+                filetype = cal_biascor
+                flabel = biascor
+                fsuffix = fits
+                ops_enddir = biascor
+                rundir = biascor
+                savefiles = True
+            </biascor>
+            <xtalked>
+                dirpat = precal
+                listonly = True
+                rundir = xtalked-bias
+            </xtalked>
+        </file>
+        <list>
+            <inlist>
+                columns = xtalked.fullname
+                depends = crosstalk-bias.file.xtalked
+                dirpat = precal
+                divide_by = ccdnum
+                filepat = nite_ccdnum_noband
+                filetype = xtalked_bias
+                flabel = biasx
+                fsuffix = list
+                ops_enddir = biascor
+                output_fields = filename, ccdnum
+                query_fields = filetype,pfw_attempt_id
+                query_table = calibration
+                rundir = biascor
+            </inlist>
+        </list>
+        loopobj = list.inlist
+        modnamepat = ${modnamepat_nite_ccdnum_noband}
+        wrapperloop = ccdnum
+        wrappername = genwrap.py
+    </mkbiascor>
+</module>

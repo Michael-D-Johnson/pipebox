@@ -1,0 +1,61 @@
+<module>
+    <collate-shredx>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        wrapperloop = tilename
+        loopobj = list.inlist 
+        max_fwthreads = ${request_cpus}
+
+        <exec_1>
+            <cmdline>
+               tilename = ${tilename}
+               flist = ${list.inlist.fullname}
+               output = ${file.shredx.fullname}
+            </cmdline>
+            execname = shredx-collate
+            cmd_hyphen =  mixed_gnu
+            used = list.inlist.chunks
+            was_generated_by = file.shredx
+            ancestry = list.inlist.chunks:file.shredx
+        </exec_1>
+        <list>
+            <inlist>
+                columns = chunks.fullname
+                depends = shredx.file.shredxchunk
+                dirpat = mepoch
+                sortkey = (chunks, True, False)
+
+                filepat = tile_generic
+                filetype = list
+                flabel = shredx-chunk
+                fsuffix = list
+                ops_enddir = list/shredx
+                rundir = list/shredx
+            </inlist>
+        </list>
+        <file>
+            <chunks>
+                dirpat = mepoch
+                listonly = True
+                rundir = shredx
+            </chunks>
+
+            ### output files
+            <shredx>
+                filetype = coadd_shredx
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = shredx
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = shredx
+                rundir = shredx
+            </shredx>
+        </file>
+
+       
+    </collate-shredx>
+</module>

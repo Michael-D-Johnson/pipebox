@@ -1,0 +1,93 @@
+<module>
+    <null-weight-for-coadd>
+        modnamepat = ${modnamepat_tile_expbandccd}
+        wrappername = genwrap.py
+        wrapperloop = expnum, band, ccdnum
+        loopobj = file.red_immask
+        max_fwthreads = 3
+        <exec_1>
+            <cmdline>
+                i = ${file.red_immask.fullname}
+                o = ${file.nwgint.fullname}
+                headfile = ${file.coadd_head_scamp.fullname}
+                max_cols = 50
+                v = _flag
+                interp_mask = TRAIL,BPM
+                invalid_mask = EDGE
+                null_mask = BPM,BADAMP,EDGEBLEED,EDGE,CRAY,SSXTALK,STREAK,TRAIL
+                block_size = 5
+                tilename = ${tilename}
+                tileid = ${tileid}
+                me_wgt_keepmask = STAR
+                hdupcfg = ${file.nwgint_config.fullname}
+                streak_file = ${file.deepstreaks.fullname}
+            </cmdline>
+            execname = coadd_nwgint
+            cmd_hyphen = mixed_gnu
+            used = file.red_immask,file.coadd_head_scamp,file.nwgint_config,file.deepstreaks
+            was_generated_by = file.nwgint
+            ancestry = file.red_immask:file.nwgint,file.coadd_head_scamp:file.nwgint
+        </exec_1>
+        <file>
+            ### input files
+            <deepstreaks>
+                # what input file is named
+                filename = ${deepstreaks_config_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </deepstreaks>
+
+            <nwgint_config>
+                # what input file is named
+                filename = ${nwgint_config_file}
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = config
+            </nwgint_config>
+            <coadd_head_scamp>
+                # how to get file data
+                depends split-scamp-head.list.coadd_head
+                match expnum, band, ccdnum
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = aux
+            </coadd_head_scamp>
+            <red_immask>
+                depends bigquery.list.allfiles.red
+                match = expnum, band, ccdnum
+
+                # where input file lives in jobroot
+                dirpat = mepoch
+                rundir = red
+            </red_immask>
+
+            ### output files
+            <nwgint>
+                depends-newname = null-weight-for-coadd.file.red_immask
+                match = expnum, band, ccdnum
+
+                # what metadata to save
+                filetype = coadd_nwgint
+
+                # how to name output file
+                filepat = tile_expbandccd
+                flabel = nwgint
+                fsuffix = fits
+
+                # whether to save or compress
+                savefiles = false
+                compress_files = false
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                rundir = nwgint
+                ops_enddir = nwgint
+            </nwgint>
+        </file>
+    </null-weight-for-coadd>
+
+</module>

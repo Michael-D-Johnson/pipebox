@@ -29,10 +29,22 @@ project = {{ args.project }}
 {% endif %}
 
 {% if args.db_section != 'db-decade' and not args.http %}
+glidein_name = bw-des
 <archive>
    <desar2home>
        transfer_server = desar0,desar1,desar4
    </desar2home>
+</archive>
+{% endif %}
+
+{% if args.http == 'desartest' and args.db_section != 'db-decade'%}
+<archive>
+    <desar2home>
+        input_transfer_semname_home = desartest-input
+        output_transfer_semname_home = desartest-output
+        root_http = https://desartest.cosmology.illinois.edu/desarchive
+        transfer_server = desartest
+    </desar2home>
 </archive>
 {% endif %}
 
@@ -41,7 +53,7 @@ project = {{ args.project }}
     <desar2home>
         input_transfer_semname_home = desar4-input-40
         output_transfer_semname_home = desar4-output
-        root_http = http://desar4.cosmology.illinois.edu/desarchive
+        root_http = https://desar4.cosmology.illinois.edu/desarchive
         transfer_server = desar4
     </desar2home>
 </archive>
@@ -52,7 +64,7 @@ project = {{ args.project }}
     <desar2home>
         input_transfer_semname_home = y2a1-desar1-input-40
         output_transfer_semname_home = y2a1-desar1-output
-        root_http = http://desar1.cosmology.illinois.edu/desarchive
+        root_http = https://desar1.cosmology.illinois.edu/desarchive
         transfer_server = desar1
     </desar2home>
 </archive>
@@ -63,7 +75,7 @@ project = {{ args.project }}
     <desar2home>
         input_transfer_semname_home = y2a1-input-40
         output_transfer_semname_home = y2a1-output
-        root_http = http://desar0.cosmology.illinois.edu/desarchive
+        root_http = https://desar0.cosmology.illinois.edu/desarchive
         transfer_server = desar0
     </desar2home>
 </archive>
@@ -76,13 +88,14 @@ project = {{ args.project }}
     </decarchive>
 </archive>
 {% endif %}
+
 {% if args.db_section == 'db-decade' and args.http == 'decahttp' %}
 <archive>
     <decarchive>
         transfer_server = decahttp
         input_transfer_semname_home = decade-input
         output_transfer_semname_home = decade-output
-        root_http = http://decahttp.ncsa.illinois.edu/deca_archive
+        root_http = https://decahttp.ncsa.illinois.edu/deca_archive
     </decarchive>
 </archive>
 {% endif %}
@@ -92,7 +105,7 @@ project = {{ args.project }}
         transfer_server = decahttp2
         input_transfer_semname_home = decade-input2
         output_transfer_semname_home = decade-output2
-        root_http = http://decahttp2.ncsa.illinois.edu/deca_archive
+        root_http = https://decahttp2.ncsa.illinois.edu/deca_archive
     </decarchive>
 </archive>
 {% endif %}
@@ -102,7 +115,7 @@ project = {{ args.project }}
         transfer_server = decahttp3
         input_transfer_semname_home = decade-input3
         output_transfer_semname_home = decade-output3
-        root_http = http://decahttp3.ncsa.illinois.edu/deca_archive
+        root_http = https://decahttp3.ncsa.illinois.edu/deca_archive
     </decarchive>
 </archive>
 {% endif %}
@@ -167,6 +180,7 @@ submit_run_dir = /local/scratch/${home_archive}/submit/${ops_run_dir}
 {% else %}
 submit_run_dir = /local/prod_scratch/desdm_ops/${home_archive}/submit/${ops_run_dir}
 {%endif%}
+
 
 {% if args.ccdnum %}
 ccdnum = {{ args.ccdnum }}

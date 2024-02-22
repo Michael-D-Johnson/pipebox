@@ -1,0 +1,79 @@
+<module>
+    <collate-mof>
+        modnamepat = ${modnamepat_tile_generic}
+        wrappername = genwrap.py
+        wrapperloop = tilename
+        loopobj = list.inlist 
+        max_fwthreads = ${request_cpus}
+
+        <exec_1>
+            <cmdline>
+               meds = ${file.meds.fullname}
+               F = ${list.inlist.fullname}
+               output = ${file.mof.fullname}
+            </cmdline>
+            execname = fitvd-collate
+            cmd_hyphen =  mixed_gnu
+            used = file.meds, list.inlist.chunks
+            was_generated_by = file.mof
+            ancestry = list.inlist.chunks:file.mof,file.meds:file.mof
+        </exec_1>
+        <list>
+            <inlist>
+                columns = chunks.fullname
+                depends = mof.file.mofchunk
+                dirpat = mepoch
+                sortkey = (chunks, True, False)
+
+                filepat = tile_generic
+                filetype = list
+                flabel = mof-chunk
+                fsuffix = list
+                ops_enddir = list/mof
+                rundir = list/mof
+            </inlist>
+        </list>
+        <file>
+            <chunks>
+                dirpat = mepoch
+                listonly = True
+                rundir = mof
+            </chunks>
+            <meds>
+            filetype =coadd_meds
+
+            # what goes into list?
+            query_table = miscfile
+            query_fields = tilename,filetype,band,proctag.tag
+            join proctag.pfw_attempt_id = miscfile.pfw_attempt_id
+            filetype=coadd_meds
+            band = i
+            tag = ${proctag}
+            output_fields = filename
+
+            # description of list for wrapper
+            columns = meds.fullname
+    
+            # where to put the file
+            dirpat = mepoch
+            ops_enddir = meds
+            rundir = meds
+            </meds>
+
+            ### output files
+            <mof>
+                filetype = coadd_mof
+
+                # how to name output file
+                filepat = tile_generic
+                flabel = mof
+                fsuffix = fits
+
+                # where to put it (jobroot=rundir, archive=ops_enddir)
+                dirpat = mepoch
+                ops_enddir = mof
+                rundir = mof
+            </mof>
+        </file>
+    </collate-mof>
+</module>

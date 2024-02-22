@@ -16,7 +16,7 @@ def fillna(dataframe):
     return df
     
 def replace_bias_band(dataframe):
-    dataframe.ix[(dataframe.obstype =='zero') & (dataframe.band != 'NA'),'band'] = 'NA'
+    dataframe.loc[(dataframe.obstype =='zero') & (dataframe.band != 'NA'),'band'] = 'NA'
     return dataframe
 
 def remove_junk(dataframe):
@@ -80,7 +80,8 @@ def create_lists(dataframe):
 def final_count_by_band(dataframe):
     """ Returns count per band of exposures to be included in processing """
     grouped = dataframe.groupby(by=['obstype','band']).agg(['count'])['expnum']
-    print grouped
+    print(grouped)
+
 
 def is_count_by_band(dataframe,bands_to_process=['g','r','Y','i','z','u','VR'],min_per_sequence=5):
     """ Returns count per band of exposures to be included in processing """
@@ -91,18 +92,18 @@ def is_count_by_band(dataframe,bands_to_process=['g','r','Y','i','z','u','VR'],m
         count = len(group)
         if group.band.unique()[0] in bands_to_process:
             if count < min_per_sequence:
-                print 'Not enough exposures:\n%s' % agged
+                print('Not enough exposures:\n%s' % agged)
                 is_false.append(False)
             else:
                 is_false.append(True)
 
     if False in is_false:
-        print 'Not enough exposures!'
-        print agged
-        print 'Exiting...'
+        print('Not enough exposures!')
+        print(agged)
+        print('Exiting...')
         sys.exit(1)
     else:
-        print 'Enough exposures per band are present. Able to process!'
+        print('Enough exposures per band are present. Able to process!')
 
 def create_clean_df(query_object):
     """ Combines all functions in nitelycal_lib """
@@ -127,7 +128,7 @@ def trim_excess_exposures(df,bands,k=150,verbose=False,exclude=None):
             if length_flat<k:
                 set_warning = True
                 if verbose:
-                    print "Warning: less than {k} found for {obstype} {band} band.".format(k=k,obstype='dome flat',band=bands[i])
+                    print("Warning: less than {k} found for {obstype} {band} band.".format(k=k,obstype='dome flat',band=bands[i]))
 
             diff_flat = float(length_flat - k)  
             if diff_flat > 0:
@@ -146,7 +147,7 @@ def trim_excess_exposures(df,bands,k=150,verbose=False,exclude=None):
         if length_zero<k:
             set_warning = True
             if verbose:
-                print "Warning: less than {k} found for {obstype}.".format(k=k,obstype='zero')
+                print("Warning: less than {k} found for {obstype}.".format(k=k,obstype='zero'))
 
         diff_zero = float(length_zero - k)
         if diff_zero >0:
@@ -184,7 +185,7 @@ def find_no_data(df,nitelist):
     nites = list(df3.index) # nites with non-zero dome flats
     diff = list(set(nitelist)-set(nites)) # list of nights with zero dome flats
     if diff:
-        print "Warning: No flats found for nites {}!".format(','.join(diff))
+        print("Warning: No flats found for nites {}!".format(','.join(diff)))
     df = df[df.nite.isin(nites)]
     return df,nites
 
@@ -194,10 +195,10 @@ if __name__ == "__main__":
     bands = ['u','r','i','g','z','Y','VR']
     query = cur.get_cals(niterange,bands=bands)
     df = create_dataframe(query)
-    #print df
-    print replace_bias_band(df)
+    #print(df)
+    print(replace_bias_band(df))
     df = create_clean_df(query)
-    #print df
+    #print(df)
     
     #is_count_by_band(df)
     count = cur.count_by_band(bands=bands)

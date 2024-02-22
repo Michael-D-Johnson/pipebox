@@ -1,0 +1,14 @@
+### Mostly Constant ###
+camsym = V 
+photflagvar = 1    
+bfreq = 2959
+bfatt = 1
+confignite = 20180525
+xtalkcoefffile = DECam_20130606.xtalk 
+photflatcornite = null
+scampconfigfile = ${confignite}_default.scamp.20170406
+scampupdateheadfile = ${confignite}_updateWCS.NIR.config
+
+ra_col = ALPHAWIN_J2000
+dec_col = DELTAWIN_J2000
+cat_columns = NUMBER,${ra_col},${dec_col}
